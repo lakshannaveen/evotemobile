@@ -6,23 +6,35 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Home')),
+      appBar: AppBar(
+        title: const Text(
+          'Welcome to Sri Lanka Evote System',
+          style: TextStyle(fontSize: 18), // Adjust font size if needed
+        ),
+        centerTitle: true, // Center the title
+      ),
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/vote'); // Go to Vote Page
-              },
-              child: const Text('Vote'),
+            SizedBox(
+              width: 200, // Adjust button width
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, '/votelogin');
+                },
+                child: const Text('Vote'),
+              ),
             ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/results'); // Go to Results Page
-              },
-              child: const Text('Results'),
+            const SizedBox(height: 30),
+            SizedBox(
+              width: 200, // Adjust button width
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, '/results');
+                },
+                child: const Text('Results'),
+              ),
             ),
           ],
         ),
