@@ -4,10 +4,10 @@ class VoteLoginPage extends StatefulWidget {
   const VoteLoginPage({super.key});
 
   @override
-  _VoteLoginPageState createState() => _VoteLoginPageState();
+  VoteLoginPageState createState() => VoteLoginPageState(); // Remove underscore
 }
 
-class _VoteLoginPageState extends State<VoteLoginPage> {
+class VoteLoginPageState extends State<VoteLoginPage> {
   final TextEditingController _nicController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
