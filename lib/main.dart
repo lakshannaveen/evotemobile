@@ -1,3 +1,4 @@
+import 'package:evoteapp/pages/admin_login_page.dart';
 import 'package:flutter/material.dart';
 import 'config/theme.dart'; // Import theme file
 import 'pages/home_page.dart';
@@ -22,6 +23,7 @@ class MyApp extends StatelessWidget {
         '/': (context) => const HomePage(),
         '/votelogin': (context) => const VoteLoginPage(),
         '/results': (context) => const ResultPage(),
+        '/admin': (context) => const AdminLoginPage(),
       },
     );
   }

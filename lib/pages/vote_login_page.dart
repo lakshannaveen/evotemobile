@@ -12,6 +12,16 @@ class _VoteLoginPageState extends State<VoteLoginPage> {
   final TextEditingController _passwordController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
+  int _adminTapCount = 0;
+  static const String adminSecret = "admin123"; // Admin Secret Key
+
+  @override
+  void dispose() {
+    _nicController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
   bool isValidNIC(String nic) {
     final oldNICRegex =
         RegExp(r'^[0-9]{9}[vV]$'); // Old NIC format (e.g., 123456789V)
@@ -27,6 +37,19 @@ class _VoteLoginPageState extends State<VoteLoginPage> {
   }
 
   void _submit() {
+    if (_nicController.text == adminSecret) {
+      // If admin secret is entered, increase tap count
+      _adminTapCount++;
+      if (_adminTapCount >= 5) {
+        _adminTapCount = 0; // Reset tap count
+        Navigator.pushNamed(context, '/admin'); // Navigate to Admin Page
+        return;
+      }
+    } else {
+      _adminTapCount = 0; // Reset if a different NIC is entered
+    }
+
+    // Normal user validation
     if (_formKey.currentState!.validate()) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -67,7 +90,7 @@ class _VoteLoginPageState extends State<VoteLoginPage> {
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'NIC cannot be empty';
-                  } else if (!isValidNIC(value)) {
+                  } else if (!isValidNIC(value) && value != adminSecret) {
                     return 'Enter a valid Sri Lankan NIC';
                   }
                   return null;
