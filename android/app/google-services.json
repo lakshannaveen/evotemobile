@@ -1,0 +1,29 @@
+{
+    "project_info": {
+      "project_number": "300272265390",
+      "project_id": "evote-59afb",
+      "storage_bucket": "evote-59afb.firebasestorage.app"
+    },
+    "client": [
+      {
+        "client_info": {
+          "mobilesdk_app_id": "1:300272265390:android:b5bc7c28fc16b95bfe253f",
+          "android_client_info": {
+            "package_name": "com.example.evoteapp"
+          }
+        },
+        "oauth_client": [],
+        "api_key": [
+          {
+            "current_key": "AIzaSyBNU8NXmhYw2zgmQ6VhHjeIqcc49GpVDnM"
+          }
+        ],
+        "services": {
+          "appinvite_service": {
+            "other_platform_oauth_client": []
+          }
+        }
+      }
+    ],
+    "configuration_version": "1"
+  }
