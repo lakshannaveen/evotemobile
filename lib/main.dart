@@ -1,11 +1,16 @@
+import 'package:firebase_core/firebase_core.dart'; // Import Firebase Core
 import 'package:evoteapp/pages/admin_login_page.dart';
 import 'package:flutter/material.dart';
-import 'config/theme.dart'; // Import theme file
+import 'config/theme.dart';
 import 'pages/home_page.dart';
 import 'pages/vote_login_page.dart';
 import 'pages/result_page.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding
+      .ensureInitialized(); // Ensure initialization before running app
+  await Firebase.initializeApp(); // Initialize Firebase
+
   runApp(const MyApp()); // Runs the app
 }
 
