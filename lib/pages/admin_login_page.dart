@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:evoteapp/config/theme.dart';
+import 'package:evoteapp/services/admin_login_service.dart';
 
 class AdminLoginPage extends StatefulWidget {
   const AdminLoginPage({super.key});
@@ -13,11 +14,23 @@ class AdminLoginPageState extends State<AdminLoginPage> {
   final TextEditingController _passwordController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  void _adminLogin() {
+  void _adminLogin() async {
     if (_formKey.currentState!.validate()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Admin Login Successful!')),
+      final service = AdminLoginService();
+      final token = await service.adminLogin(
+        _adminController.text.trim(),
+        _passwordController.text,
       );
+
+      if (token != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Admin Login Successful!')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Invalid credentials')),
+        );
+      }
     }
   }
 
