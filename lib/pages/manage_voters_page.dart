@@ -14,32 +14,52 @@ class ManageVotersPageState extends State<ManageVotersPage> {
     {
       'id': '1',
       'name': 'John Doe',
-      'email': 'john.doe@example.com',
-      'voterId': 'VOT001'
+      'address': '123 Temple Road, Colombo 03',
+      'nic': '199912345678',
+      'voterId': '20-01-12345',
+      'district': 'Colombo',
+      'pollingDivision': 'Colombo Central',
+      'voteStatus': false
     },
     {
       'id': '2',
       'name': 'Jane Smith',
-      'email': 'jane.smith@example.com',
-      'voterId': 'VOT002'
+      'address': '45 Galle Road, Dehiwala',
+      'nic': '200012345678',
+      'voterId': '20-02-12346',
+      'district': 'Colombo',
+      'pollingDivision': 'Dehiwala',
+      'voteStatus': false
     },
     {
       'id': '3',
       'name': 'Robert Johnson',
-      'email': 'robert.j@example.com',
-      'voterId': 'VOT003'
+      'address': '789 Kandy Road, Kandy',
+      'nic': '199812345678',
+      'voterId': '20-03-12347',
+      'district': 'Kandy',
+      'pollingDivision': 'Kandy Central',
+      'voteStatus': false
     },
     {
       'id': '4',
       'name': 'Emily Davis',
-      'email': 'emily.d@example.com',
-      'voterId': 'VOT004'
+      'address': '101 Gampaha Road, Gampaha',
+      'nic': '199712345678',
+      'voterId': '20-04-12348',
+      'district': 'Gampaha',
+      'pollingDivision': 'Gampaha Central',
+      'voteStatus': false
     },
     {
       'id': '5',
       'name': 'Michael Wilson',
-      'email': 'michael.w@example.com',
-      'voterId': 'VOT005'
+      'address': '202 Matara Road, Matara',
+      'nic': '199612345678',
+      'voterId': '20-05-12349',
+      'district': 'Matara',
+      'pollingDivision': 'Matara Central',
+      'voteStatus': false
     },
   ];
   List<Map<String, dynamic>> _filteredVoters = [];
@@ -58,10 +78,8 @@ class ManageVotersPageState extends State<ManageVotersPage> {
           setState(() {
             _voters.add({
               'id': '${_voters.length + 1}',
-              'name': voter['name'],
-              'email': voter['email'],
-              'voterId':
-                  'VOT${(_voters.length + 1).toString().padLeft(3, '0')}',
+              ...voter,
+              'voteStatus': false,
             });
             _filterVoters(_searchController.text);
           });
@@ -81,8 +99,7 @@ class ManageVotersPageState extends State<ManageVotersPage> {
             if (index != -1) {
               _voters[index] = {
                 ..._voters[index],
-                'name': updatedVoter['name'],
-                'email': updatedVoter['email'],
+                ...updatedVoter,
               };
               _filterVoters(_searchController.text);
             }
@@ -124,14 +141,12 @@ class ManageVotersPageState extends State<ManageVotersPage> {
         _filteredVoters = _voters;
       } else {
         _filteredVoters = _voters.where((voter) {
-          final name = voter['name'].toString().toLowerCase();
-          final email = voter['email'].toString().toLowerCase();
-          final voterId = voter['voterId'].toString().toLowerCase();
           final searchQuery = query.toLowerCase();
-
-          return name.contains(searchQuery) ||
-              email.contains(searchQuery) ||
-              voterId.contains(searchQuery);
+          return voter['name'].toString().toLowerCase().contains(searchQuery) ||
+              voter['nic'].toString().toLowerCase().contains(searchQuery) ||
+              voter['voterId'].toString().toLowerCase().contains(searchQuery) ||
+              voter['district'].toString().toLowerCase().contains(searchQuery) ||
+              voter['pollingDivision'].toString().toLowerCase().contains(searchQuery);
         }).toList();
       }
     });
@@ -190,24 +205,39 @@ class ManageVotersPageState extends State<ManageVotersPage> {
                           final voter = _filteredVoters[index];
                           return Card(
                             margin: const EdgeInsets.only(bottom: 8.0),
-                            child: ListTile(
+                            child: ExpansionTile(
                               title: Text(voter['name']),
-                              subtitle: Text(
-                                  '${voter['email']} • ID: ${voter['voterId']}'),
-                              trailing: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  IconButton(
-                                    icon: const Icon(Icons.edit),
-                                    onPressed: () => _editVoter(voter),
+                              subtitle: Text('NIC: ${voter['nic']}'),
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text('Address: ${voter['address']}'),
+                                      Text('Voter ID: ${voter['voterId']}'),
+                                      Text('District: ${voter['district']}'),
+                                      Text('Polling Division: ${voter['pollingDivision']}'),
+                                      Text('Vote Status: ${voter['voteStatus'] ? 'Voted' : 'Not Voted'}'),
+                                      const SizedBox(height: 8),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.end,
+                                        children: [
+                                          IconButton(
+                                            icon: const Icon(Icons.edit),
+                                            onPressed: () => _editVoter(voter),
+                                          ),
+                                          IconButton(
+                                            icon: const Icon(Icons.delete,
+                                                color: Colors.red),
+                                            onPressed: () => _deleteVoter(voter['id']),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
                                   ),
-                                  IconButton(
-                                    icon: const Icon(Icons.delete,
-                                        color: Colors.red),
-                                    onPressed: () => _deleteVoter(voter['id']),
-                                  ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
                           );
                         },
@@ -235,66 +265,150 @@ class _VoterFormDialog extends StatefulWidget {
 }
 
 class _VoterFormDialogState extends State<_VoterFormDialog> {
-  late TextEditingController _nameController;
-  late TextEditingController _emailController;
   final _formKey = GlobalKey<FormState>();
+  late TextEditingController _nameController;
+  late TextEditingController _addressController;
+  late TextEditingController _nicController;
+  late TextEditingController _voterIdController;
+  late TextEditingController _districtController;
+  late TextEditingController _pollingDivisionController;
 
   @override
   void initState() {
     super.initState();
-    _nameController =
-        TextEditingController(text: widget.initialValue?['name'] ?? '');
-    _emailController =
-        TextEditingController(text: widget.initialValue?['email'] ?? '');
+    _nameController = TextEditingController(text: widget.initialValue?['name'] ?? '');
+    _addressController = TextEditingController(text: widget.initialValue?['address'] ?? '');
+    _nicController = TextEditingController(text: widget.initialValue?['nic'] ?? '');
+    _voterIdController = TextEditingController(text: widget.initialValue?['voterId'] ?? '');
+    _districtController = TextEditingController(text: widget.initialValue?['district'] ?? '');
+    _pollingDivisionController = TextEditingController(text: widget.initialValue?['pollingDivision'] ?? '');
   }
 
   @override
   void dispose() {
     _nameController.dispose();
-    _emailController.dispose();
+    _addressController.dispose();
+    _nicController.dispose();
+    _voterIdController.dispose();
+    _districtController.dispose();
+    _pollingDivisionController.dispose();
     super.dispose();
+  }
+
+  bool isValidNIC(String nic) {
+    final oldNICRegex = RegExp(r'^[0-9]{9}[vV]$');
+    final newNICRegex = RegExp(r'^[0-9]{12}$');
+    return oldNICRegex.hasMatch(nic) || newNICRegex.hasMatch(nic);
+  }
+
+  bool isValidVoterId(String voterId) {
+    final voterIdRegex = RegExp(r'^\d{2}-\d{2}-\d{5}$');
+    return voterIdRegex.hasMatch(voterId);
   }
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text(widget.initialValue == null ? 'Add Voter' : 'Edit Voter'),
-      content: Form(
-        key: _formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextFormField(
-              controller: _nameController,
-              decoration: const InputDecoration(
-                labelText: 'Name',
-                border: OutlineInputBorder(),
+      content: SingleChildScrollView(
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                controller: _nameController,
+                decoration: const InputDecoration(
+                  labelText: 'Full Name',
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter the full name';
+                  }
+                  return null;
+                },
               ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter a name';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _emailController,
-              decoration: const InputDecoration(
-                labelText: 'Email',
-                border: OutlineInputBorder(),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _addressController,
+                decoration: const InputDecoration(
+                  labelText: 'Address',
+                  border: OutlineInputBorder(),
+                ),
+                maxLines: 2,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter the address';
+                  }
+                  return null;
+                },
               ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter an email';
-                }
-                if (!value.contains('@')) {
-                  return 'Please enter a valid email';
-                }
-                return null;
-              },
-            ),
-          ],
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _nicController,
+                decoration: const InputDecoration(
+                  labelText: 'NIC Number',
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter the NIC number';
+                  }
+                  if (!isValidNIC(value)) {
+                    return 'Invalid NIC format';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _voterIdController,
+                decoration: const InputDecoration(
+                  labelText: 'Voter ID',
+                  border: OutlineInputBorder(),
+                  hintText: '20-01-12345',
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter the voter ID';
+                  }
+                  if (!isValidVoterId(value)) {
+                    return 'Invalid voter ID format (YY-DD-NNNNN)';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _districtController,
+                decoration: const InputDecoration(
+                  labelText: 'District',
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter the district';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _pollingDivisionController,
+                decoration: const InputDecoration(
+                  labelText: 'Polling Division',
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter the polling division';
+                  }
+                  return null;
+                },
+              ),
+            ],
+          ),
         ),
       ),
       actions: [
@@ -302,17 +416,21 @@ class _VoterFormDialogState extends State<_VoterFormDialog> {
           onPressed: () => Navigator.of(context).pop(),
           child: const Text('Cancel'),
         ),
-        ElevatedButton(
+        TextButton(
           onPressed: () {
             if (_formKey.currentState!.validate()) {
               widget.onSubmit({
                 'name': _nameController.text,
-                'email': _emailController.text,
+                'address': _addressController.text,
+                'nic': _nicController.text,
+                'voterId': _voterIdController.text,
+                'district': _districtController.text,
+                'pollingDivision': _pollingDivisionController.text,
               });
               Navigator.of(context).pop();
             }
           },
-          child: Text(widget.initialValue == null ? 'Add' : 'Save'),
+          child: const Text('Save'),
         ),
       ],
     );
