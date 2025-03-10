@@ -13,8 +13,7 @@ class ManageVotersPage extends StatefulWidget {
 class ManageVotersPageState extends State<ManageVotersPage> {
   final TextEditingController _searchController = TextEditingController();
   final VoterService _voterService = VoterService();
-  List<QueryDocumentSnapshot> _filteredVoters = [];
-  bool _isLoading = false;
+  List<Map<String, dynamic>> _filteredVoters = [];
 
   @override
   void initState() {
@@ -108,22 +107,24 @@ class ManageVotersPageState extends State<ManageVotersPage> {
   }
 
   Future<void> _filterVoters(String query) async {
-    setState(() => _isLoading = true);
     try {
       if (query.isEmpty) {
-        setState(() => _isLoading = false);
+        setState(() {
+          _filteredVoters = [];
+        });
         return;
       }
       final results = await _voterService.searchVoters(query);
       if (mounted) {
         setState(() {
-          _filteredVoters = results;
-          _isLoading = false;
+          _filteredVoters = results.map((doc) => {
+            'id': doc.id,
+            ...doc.data() as Map<String, dynamic>
+          }).toList();
         });
       }
     } catch (e) {
       if (mounted) {
-        setState(() => _isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error searching voters: $e')),
         );
@@ -202,8 +203,18 @@ class ManageVotersPageState extends State<ManageVotersPage> {
                     return ListView.builder(
                       itemCount: voters.length,
                       itemBuilder: (context, index) {
-                        final voter = voters[index];
-                        final data = voter.data() as Map<String, dynamic>;
+                        final dynamic voter = voters[index];
+                        final Map<String, dynamic> data;
+                        final String voterId;
+
+                        if (_searchController.text.isEmpty) {
+                          final doc = voter as QueryDocumentSnapshot;
+                          data = doc.data() as Map<String, dynamic>;
+                          voterId = doc.id;
+                        } else {
+                          data = voter as Map<String, dynamic>;
+                          voterId = data['id'] as String;
+                        }
                         
                         return Card(
                           margin: const EdgeInsets.only(bottom: 8.0),
@@ -227,11 +238,19 @@ class ManageVotersPageState extends State<ManageVotersPage> {
                                       children: [
                                         IconButton(
                                           icon: const Icon(Icons.edit),
-                                          onPressed: () => _editVoter(voter),
+                                          onPressed: () {
+                                            if (_searchController.text.isEmpty) {
+                                              _editVoter(voter as QueryDocumentSnapshot);
+                                            } else {
+                                              final originalDoc = snapshot.data!.docs
+                                                  .firstWhere((doc) => doc.id == voterId);
+                                              _editVoter(originalDoc);
+                                            }
+                                          },
                                         ),
                                         IconButton(
                                           icon: const Icon(Icons.delete, color: Colors.red),
-                                          onPressed: () => _deleteVoter(voter.id),
+                                          onPressed: () => _deleteVoter(voterId),
                                         ),
                                       ],
                                     ),
