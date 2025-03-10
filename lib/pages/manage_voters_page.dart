@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:evoteapp/config/theme.dart';
 import 'package:evoteapp/services/voter_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:evoteapp/pages/admin_dashboard_page.dart';
 
 class ManageVotersPage extends StatefulWidget {
   const ManageVotersPage({super.key});
@@ -23,23 +24,29 @@ class ManageVotersPageState extends State<ManageVotersPage> {
   void _addVoter() {
     showDialog(
       context: context,
-      builder: (context) => _VoterFormDialog(
-        onSubmit: (voter) async {
-          try {
-            await _voterService.addVoter(voter);
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Voter added successfully')),
-              );
+      barrierDismissible: false,
+      builder: (dialogContext) => WillPopScope(
+        onWillPop: () async => false,
+        child: _VoterFormDialog(
+          onSubmit: (voter) async {
+            try {
+              await _voterService.addVoter(voter);
+              if (mounted && dialogContext.mounted) {
+                Navigator.of(dialogContext).pop();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Voter added successfully')),
+                );
+              }
+            } catch (e) {
+              if (mounted && dialogContext.mounted) {
+                Navigator.of(dialogContext).pop();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Error adding voter: $e')),
+                );
+              }
             }
-          } catch (e) {
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Error adding voter: $e')),
-              );
-            }
-          }
-        },
+          },
+        ),
       ),
     );
   }
@@ -47,24 +54,30 @@ class ManageVotersPageState extends State<ManageVotersPage> {
   void _editVoter(QueryDocumentSnapshot voter) {
     showDialog(
       context: context,
-      builder: (context) => _VoterFormDialog(
-        initialValue: voter.data() as Map<String, dynamic>,
-        onSubmit: (updatedVoter) async {
-          try {
-            await _voterService.updateVoter(voter.id, updatedVoter);
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Voter updated successfully')),
-              );
+      barrierDismissible: false,
+      builder: (dialogContext) => WillPopScope(
+        onWillPop: () async => false,
+        child: _VoterFormDialog(
+          initialValue: voter.data() as Map<String, dynamic>,
+          onSubmit: (updatedVoter) async {
+            try {
+              await _voterService.updateVoter(voter.id, updatedVoter);
+              if (mounted && dialogContext.mounted) {
+                Navigator.of(dialogContext).pop();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Voter updated successfully')),
+                );
+              }
+            } catch (e) {
+              if (mounted && dialogContext.mounted) {
+                Navigator.of(dialogContext).pop();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Error updating voter: $e')),
+                );
+              }
             }
-          } catch (e) {
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Error updating voter: $e')),
-              );
-            }
-          }
-        },
+          },
+        ),
       ),
     );
   }
@@ -72,27 +85,27 @@ class ManageVotersPageState extends State<ManageVotersPage> {
   void _deleteVoter(String id) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text('Delete Voter'),
         content: const Text('Are you sure you want to delete this voter?'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => Navigator.of(dialogContext).pop(),
             child: const Text('Cancel'),
           ),
           TextButton(
             onPressed: () async {
               try {
+                // Close the dialog first
+                Navigator.of(dialogContext).pop();
                 await _voterService.deleteVoter(id);
-                if (mounted) {
-                  Navigator.of(context).pop();
+                if (mounted && context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Voter deleted successfully')),
                   );
                 }
               } catch (e) {
-                if (mounted) {
-                  Navigator.of(context).pop();
+                if (mounted && context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Error deleting voter: $e')),
                   );
@@ -138,6 +151,15 @@ class ManageVotersPageState extends State<ManageVotersPage> {
       data: AppTheme.adminTheme,
       child: Scaffold(
         appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const AdminDashboardPage(),
+              ),
+            ),
+          ),
           title: const Text('Manage Voters'),
           centerTitle: true,
         ),
@@ -149,11 +171,12 @@ class ManageVotersPageState extends State<ManageVotersPage> {
               TextField(
                 controller: _searchController,
                 decoration: const InputDecoration(
-                  labelText: 'Search voters',
+                  labelText: 'Search voters by exact NIC or name',
+                  hintText: 'Enter complete NIC number or full name',
                   prefixIcon: Icon(Icons.search),
                   border: OutlineInputBorder(),
                 ),
-                onChanged: _filterVoters,
+                onChanged: (value) => _filterVoters(value.toLowerCase()),
               ),
               const SizedBox(height: 16),
               Row(
@@ -330,131 +353,133 @@ class _VoterFormDialogState extends State<_VoterFormDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text(widget.initialValue == null ? 'Add Voter' : 'Edit Voter'),
-      content: SingleChildScrollView(
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextFormField(
-                controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Full Name',
-                  border: OutlineInputBorder(),
+    return WillPopScope(
+      onWillPop: () async => false,
+      child: AlertDialog(
+        title: Text(widget.initialValue == null ? 'Add Voter' : 'Edit Voter'),
+        content: SingleChildScrollView(
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextFormField(
+                  controller: _nameController,
+                  decoration: const InputDecoration(
+                    labelText: 'Full Name',
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter the full name';
+                    }
+                    return null;
+                  },
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter the full name';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _addressController,
-                decoration: const InputDecoration(
-                  labelText: 'Address',
-                  border: OutlineInputBorder(),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _addressController,
+                  decoration: const InputDecoration(
+                    labelText: 'Address',
+                    border: OutlineInputBorder(),
+                  ),
+                  maxLines: 2,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter the address';
+                    }
+                    return null;
+                  },
                 ),
-                maxLines: 2,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter the address';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _nicController,
-                decoration: const InputDecoration(
-                  labelText: 'NIC Number',
-                  border: OutlineInputBorder(),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _nicController,
+                  decoration: const InputDecoration(
+                    labelText: 'NIC Number',
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter the NIC number';
+                    }
+                    if (!isValidNIC(value)) {
+                      return 'Invalid NIC format';
+                    }
+                    return null;
+                  },
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter the NIC number';
-                  }
-                  if (!isValidNIC(value)) {
-                    return 'Invalid NIC format';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _voterIdController,
-                decoration: const InputDecoration(
-                  labelText: 'Voter ID',
-                  border: OutlineInputBorder(),
-                  hintText: '20-01-12345',
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _voterIdController,
+                  decoration: const InputDecoration(
+                    labelText: 'Voter ID',
+                    border: OutlineInputBorder(),
+                    hintText: '20-01-12345',
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter the voter ID';
+                    }
+                    if (!isValidVoterId(value)) {
+                      return 'Invalid voter ID format (YY-DD-NNNNN)';
+                    }
+                    return null;
+                  },
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter the voter ID';
-                  }
-                  if (!isValidVoterId(value)) {
-                    return 'Invalid voter ID format (YY-DD-NNNNN)';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _districtController,
-                decoration: const InputDecoration(
-                  labelText: 'District',
-                  border: OutlineInputBorder(),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _districtController,
+                  decoration: const InputDecoration(
+                    labelText: 'District',
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter the district';
+                    }
+                    return null;
+                  },
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter the district';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _pollingDivisionController,
-                decoration: const InputDecoration(
-                  labelText: 'Polling Division',
-                  border: OutlineInputBorder(),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _pollingDivisionController,
+                  decoration: const InputDecoration(
+                    labelText: 'Polling Division',
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter the polling division';
+                    }
+                    return null;
+                  },
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter the polling division';
-                  }
-                  return null;
-                },
-              ),
-            ],
+              ],
+            ),
           ),
         ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              if (_formKey.currentState!.validate()) {
+                widget.onSubmit({
+                  'name': _nameController.text.toLowerCase(),
+                  'address': _addressController.text,
+                  'nic': _nicController.text.toLowerCase(),
+                  'voterId': _voterIdController.text,
+                  'district': _districtController.text,
+                  'pollingDivision': _pollingDivisionController.text,
+                });
+              }
+            },
+            child: const Text('Save'),
+          ),
+        ],
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
-        ),
-        TextButton(
-          onPressed: () {
-            if (_formKey.currentState!.validate()) {
-              widget.onSubmit({
-                'name': _nameController.text,
-                'address': _addressController.text,
-                'nic': _nicController.text,
-                'voterId': _voterIdController.text,
-                'district': _districtController.text,
-                'pollingDivision': _pollingDivisionController.text,
-              });
-              Navigator.of(context).pop();
-            }
-          },
-          child: const Text('Save'),
-        ),
-      ],
     );
   }
 }

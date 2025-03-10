@@ -56,9 +56,9 @@ class AdminDashboardPageState extends State<AdminDashboardPage> {
                 leading: const Icon(Icons.people),
                 title: const Text('Manage Voters'),
                 onTap: () {
-                  // Navigate to voter management
-                  Navigator.pop(context);
-                  Navigator.of(context).push(
+                  Navigator.pop(context); // Close drawer
+                  Navigator.pushReplacement(
+                    context,
                     MaterialPageRoute(
                       builder: (context) => const ManageVotersPage(),
                     ),

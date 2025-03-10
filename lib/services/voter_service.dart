@@ -46,16 +46,34 @@ class VoterService {
     }
   }
 
-  // Search voters
+  // Search voters with prefix pattern matching for NIC and name
   Future<List<QueryDocumentSnapshot>> searchVoters(String query) async {
     try {
-      QuerySnapshot querySnapshot = await _firestore
+      if (query.isEmpty) {
+        QuerySnapshot querySnapshot = await _firestore
           .collection(_collection)
-          .where('name', isGreaterThanOrEqualTo: query)
-          .where('name', isLessThan: query + 'z')
+          .get();
+        return querySnapshot.docs;
+      }
+
+      // Convert query to lowercase for case-insensitive comparison
+      final lowercaseQuery = query.toLowerCase();
+
+      // Get documents that start with the query in either NIC or name
+      QuerySnapshot nicResults = await _firestore
+          .collection(_collection)
+          .where('nic', isGreaterThanOrEqualTo: lowercaseQuery)
+          .where('nic', isLessThan: lowercaseQuery + '\uf8ff')
           .get();
 
-      return querySnapshot.docs;
+      QuerySnapshot nameResults = await _firestore
+          .collection(_collection)
+          .where('name', isGreaterThanOrEqualTo: lowercaseQuery)
+          .where('name', isLessThan: lowercaseQuery + '\uf8ff')
+          .get();
+
+      // Combine the results
+      return [...nicResults.docs, ...nameResults.docs];
     } catch (e) {
       print('Error searching voters: $e');
       rethrow;
