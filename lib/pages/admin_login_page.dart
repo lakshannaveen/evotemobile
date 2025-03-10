@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:evoteapp/config/theme.dart';
 import 'package:evoteapp/services/admin_login_service.dart';
+import 'package:evoteapp/pages/admin_dashboard_page.dart';
 
 class AdminLoginPage extends StatefulWidget {
   const AdminLoginPage({super.key});
@@ -25,6 +26,12 @@ class AdminLoginPageState extends State<AdminLoginPage> {
       if (token != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Admin Login Successful!')),
+        );
+
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) => const AdminDashboardPage(),
+          ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(

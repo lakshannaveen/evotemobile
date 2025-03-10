@@ -27,6 +27,7 @@ class AdminLoginService {
         final jwt = JWT({
           'adminId': querySnapshot.docs.first.id,
           'role': 'admin',
+          'username': username,
         });
         final token = jwt.sign(SecretKey('evote_secret_key'));
         return token;
