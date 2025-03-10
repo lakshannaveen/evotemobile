@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:evoteapp/config/theme.dart';
+import 'package:evoteapp/services/voter_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ManageVotersPage extends StatefulWidget {
   const ManageVotersPage({super.key});
@@ -10,100 +12,59 @@ class ManageVotersPage extends StatefulWidget {
 
 class ManageVotersPageState extends State<ManageVotersPage> {
   final TextEditingController _searchController = TextEditingController();
-  final List<Map<String, dynamic>> _voters = [
-    {
-      'id': '1',
-      'name': 'John Doe',
-      'address': '123 Temple Road, Colombo 03',
-      'nic': '199912345678',
-      'voterId': '20-01-12345',
-      'district': 'Colombo',
-      'pollingDivision': 'Colombo Central',
-      'voteStatus': false
-    },
-    {
-      'id': '2',
-      'name': 'Jane Smith',
-      'address': '45 Galle Road, Dehiwala',
-      'nic': '200012345678',
-      'voterId': '20-02-12346',
-      'district': 'Colombo',
-      'pollingDivision': 'Dehiwala',
-      'voteStatus': false
-    },
-    {
-      'id': '3',
-      'name': 'Robert Johnson',
-      'address': '789 Kandy Road, Kandy',
-      'nic': '199812345678',
-      'voterId': '20-03-12347',
-      'district': 'Kandy',
-      'pollingDivision': 'Kandy Central',
-      'voteStatus': false
-    },
-    {
-      'id': '4',
-      'name': 'Emily Davis',
-      'address': '101 Gampaha Road, Gampaha',
-      'nic': '199712345678',
-      'voterId': '20-04-12348',
-      'district': 'Gampaha',
-      'pollingDivision': 'Gampaha Central',
-      'voteStatus': false
-    },
-    {
-      'id': '5',
-      'name': 'Michael Wilson',
-      'address': '202 Matara Road, Matara',
-      'nic': '199612345678',
-      'voterId': '20-05-12349',
-      'district': 'Matara',
-      'pollingDivision': 'Matara Central',
-      'voteStatus': false
-    },
-  ];
-  List<Map<String, dynamic>> _filteredVoters = [];
+  final VoterService _voterService = VoterService();
+  List<QueryDocumentSnapshot> _filteredVoters = [];
+  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    _filteredVoters = _voters;
   }
 
   void _addVoter() {
     showDialog(
       context: context,
       builder: (context) => _VoterFormDialog(
-        onSubmit: (voter) {
-          setState(() {
-            _voters.add({
-              'id': '${_voters.length + 1}',
-              ...voter,
-              'voteStatus': false,
-            });
-            _filterVoters(_searchController.text);
-          });
+        onSubmit: (voter) async {
+          try {
+            await _voterService.addVoter(voter);
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Voter added successfully')),
+              );
+            }
+          } catch (e) {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Error adding voter: $e')),
+              );
+            }
+          }
         },
       ),
     );
   }
 
-  void _editVoter(Map<String, dynamic> voter) {
+  void _editVoter(QueryDocumentSnapshot voter) {
     showDialog(
       context: context,
       builder: (context) => _VoterFormDialog(
-        initialValue: voter,
-        onSubmit: (updatedVoter) {
-          setState(() {
-            final index = _voters.indexWhere((v) => v['id'] == voter['id']);
-            if (index != -1) {
-              _voters[index] = {
-                ..._voters[index],
-                ...updatedVoter,
-              };
-              _filterVoters(_searchController.text);
+        initialValue: voter.data() as Map<String, dynamic>,
+        onSubmit: (updatedVoter) async {
+          try {
+            await _voterService.updateVoter(voter.id, updatedVoter);
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Voter updated successfully')),
+              );
             }
-          });
+          } catch (e) {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Error updating voter: $e')),
+              );
+            }
+          }
         },
       ),
     );
@@ -121,12 +82,23 @@ class ManageVotersPageState extends State<ManageVotersPage> {
             child: const Text('Cancel'),
           ),
           TextButton(
-            onPressed: () {
-              setState(() {
-                _voters.removeWhere((voter) => voter['id'] == id);
-                _filterVoters(_searchController.text);
-              });
-              Navigator.of(context).pop();
+            onPressed: () async {
+              try {
+                await _voterService.deleteVoter(id);
+                if (mounted) {
+                  Navigator.of(context).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Voter deleted successfully')),
+                  );
+                }
+              } catch (e) {
+                if (mounted) {
+                  Navigator.of(context).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Error deleting voter: $e')),
+                  );
+                }
+              }
             },
             child: const Text('Delete', style: TextStyle(color: Colors.red)),
           ),
@@ -135,21 +107,28 @@ class ManageVotersPageState extends State<ManageVotersPage> {
     );
   }
 
-  void _filterVoters(String query) {
-    setState(() {
+  Future<void> _filterVoters(String query) async {
+    setState(() => _isLoading = true);
+    try {
       if (query.isEmpty) {
-        _filteredVoters = _voters;
-      } else {
-        _filteredVoters = _voters.where((voter) {
-          final searchQuery = query.toLowerCase();
-          return voter['name'].toString().toLowerCase().contains(searchQuery) ||
-              voter['nic'].toString().toLowerCase().contains(searchQuery) ||
-              voter['voterId'].toString().toLowerCase().contains(searchQuery) ||
-              voter['district'].toString().toLowerCase().contains(searchQuery) ||
-              voter['pollingDivision'].toString().toLowerCase().contains(searchQuery);
-        }).toList();
+        setState(() => _isLoading = false);
+        return;
       }
-    });
+      final results = await _voterService.searchVoters(query);
+      if (mounted) {
+        setState(() {
+          _filteredVoters = results;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error searching voters: $e')),
+        );
+      }
+    }
   }
 
   @override
@@ -179,12 +158,18 @@ class ManageVotersPageState extends State<ManageVotersPage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    'Voters (${_filteredVoters.length})',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  StreamBuilder<QuerySnapshot>(
+                    stream: _voterService.getVoters(),
+                    builder: (context, snapshot) {
+                      final voterCount = snapshot.hasData ? snapshot.data!.docs.length : 0;
+                      return Text(
+                        'Voters ($voterCount)',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      );
+                    },
                   ),
                   ElevatedButton.icon(
                     onPressed: _addVoter,
@@ -195,53 +180,71 @@ class ManageVotersPageState extends State<ManageVotersPage> {
               ),
               const SizedBox(height: 16),
               Expanded(
-                child: _filteredVoters.isEmpty
-                    ? const Center(
-                        child: Text('No voters found'),
-                      )
-                    : ListView.builder(
-                        itemCount: _filteredVoters.length,
-                        itemBuilder: (context, index) {
-                          final voter = _filteredVoters[index];
-                          return Card(
-                            margin: const EdgeInsets.only(bottom: 8.0),
-                            child: ExpansionTile(
-                              title: Text(voter['name']),
-                              subtitle: Text('NIC: ${voter['nic']}'),
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.all(16.0),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text('Address: ${voter['address']}'),
-                                      Text('Voter ID: ${voter['voterId']}'),
-                                      Text('District: ${voter['district']}'),
-                                      Text('Polling Division: ${voter['pollingDivision']}'),
-                                      Text('Vote Status: ${voter['voteStatus'] ? 'Voted' : 'Not Voted'}'),
-                                      const SizedBox(height: 8),
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.end,
-                                        children: [
-                                          IconButton(
-                                            icon: const Icon(Icons.edit),
-                                            onPressed: () => _editVoter(voter),
-                                          ),
-                                          IconButton(
-                                            icon: const Icon(Icons.delete,
-                                                color: Colors.red),
-                                            onPressed: () => _deleteVoter(voter['id']),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
+                child: StreamBuilder<QuerySnapshot>(
+                  stream: _voterService.getVoters(),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasError) {
+                      return Center(child: Text('Error: ${snapshot.error}'));
+                    }
+
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+
+                    final voters = _searchController.text.isEmpty
+                        ? snapshot.data!.docs
+                        : _filteredVoters;
+
+                    if (voters.isEmpty) {
+                      return const Center(child: Text('No voters found'));
+                    }
+
+                    return ListView.builder(
+                      itemCount: voters.length,
+                      itemBuilder: (context, index) {
+                        final voter = voters[index];
+                        final data = voter.data() as Map<String, dynamic>;
+                        
+                        return Card(
+                          margin: const EdgeInsets.only(bottom: 8.0),
+                          child: ExpansionTile(
+                            title: Text(data['name'] ?? 'N/A'),
+                            subtitle: Text('NIC: ${data['nic'] ?? 'N/A'}'),
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('Address: ${data['address'] ?? 'N/A'}'),
+                                    Text('Voter ID: ${data['voterId'] ?? 'N/A'}'),
+                                    Text('District: ${data['district'] ?? 'N/A'}'),
+                                    Text('Polling Division: ${data['pollingDivision'] ?? 'N/A'}'),
+                                    Text('Vote Status: ${data['voteStatus'] == true ? 'Voted' : 'Not Voted'}'),
+                                    const SizedBox(height: 8),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        IconButton(
+                                          icon: const Icon(Icons.edit),
+                                          onPressed: () => _editVoter(voter),
+                                        ),
+                                        IconButton(
+                                          icon: const Icon(Icons.delete, color: Colors.red),
+                                          onPressed: () => _deleteVoter(voter.id),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
               ),
             ],
           ),
