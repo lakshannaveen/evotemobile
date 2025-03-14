@@ -15,6 +15,7 @@ class VoteLoginPageState extends State<VoteLoginPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   int _adminTapCount = 0;
+  bool _isLoading = false; // Track loading state
   static const String adminSecret = "admin123"; // Admin Secret Key
   final LoginService _loginService = LoginService(); // Initialize LoginService
 
@@ -40,10 +41,9 @@ class VoteLoginPageState extends State<VoteLoginPage> {
 
   Future<void> _submit() async {
     if (_nicController.text == adminSecret) {
-      // If admin secret is entered, increase tap count
       _adminTapCount++;
       if (_adminTapCount >= 5) {
-        _adminTapCount = 0; // Reset tap count
+        _adminTapCount = 0;
         Navigator.pushNamed(context, '/admin'); // Navigate to Admin Page
         return;
       }
@@ -51,23 +51,24 @@ class VoteLoginPageState extends State<VoteLoginPage> {
       _adminTapCount = 0; // Reset if a different NIC is entered
     }
 
-    // Normal user validation
     if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isLoading = true; // Start loading animation
+      });
+
       final nic = _nicController.text;
       final userId = _idController.text;
 
       try {
         final token = await _loginService.validateLogin(nic, userId);
 
-        if (token != null) {
-          final jwt =
-              JWT.verify(token, SecretKey('1020')); // Verify and decode token
-          JWT.verify(token, SecretKey('1020')); // Verify and decode token
-          JWT.verify(token, SecretKey("1020")); // Verify and decode token
-          final user = jwt.payload; // Extract user details
+        await Future.delayed(const Duration(seconds: 1)); // Simulate loading
 
-          Navigator.pushNamed(context, '/verify',
-              arguments: user); // Pass user details to Verify Page
+        if (token != null) {
+          final jwt = JWT.verify(token, SecretKey('1020'));
+          final user = jwt.payload;
+
+          Navigator.pushNamed(context, '/verify', arguments: user);
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -79,6 +80,10 @@ class VoteLoginPageState extends State<VoteLoginPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('An error occurred. Please try again.')),
         );
+      } finally {
+        setState(() {
+          _isLoading = false; // Stop loading animation
+        });
       }
     }
   }
@@ -146,10 +151,12 @@ class VoteLoginPageState extends State<VoteLoginPage> {
                 },
               ),
               const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _submit,
-                child: const Text('Login'),
-              ),
+              _isLoading
+                  ? const CircularProgressIndicator() // Show loading animation
+                  : ElevatedButton(
+                      onPressed: _submit,
+                      child: const Text('Login'),
+                    ),
             ],
           ),
         ),
