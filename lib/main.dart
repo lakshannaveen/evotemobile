@@ -5,6 +5,7 @@ import 'config/theme.dart';
 import 'pages/home_page.dart';
 import 'pages/vote_login_page.dart';
 import 'pages/result_page.dart';
+import 'pages/verify_page.dart';
 
 void main() async {
   WidgetsFlutterBinding
@@ -29,6 +30,7 @@ class MyApp extends StatelessWidget {
         '/votelogin': (context) => const VoteLoginPage(),
         '/results': (context) => const ResultPage(),
         '/admin': (context) => const AdminLoginPage(),
+        '/verify': (context) => const VerifyPage(),
       },
     );
   }
