@@ -28,7 +28,7 @@ class User {
       'address': address,
       'nic_old': nicOld,
       'nic_new': nicNew,
-      'votestaatus': voteStatus,
+      'voteStatus': voteStatus, // Corrected spelling
       'district': district,
       'polling_division': pollingDivision,
     };
@@ -42,7 +42,7 @@ class User {
       address: map['address'],
       nicOld: map['nic_old'],
       nicNew: map['nic_new'],
-      voteStatus: map['votestaatus'],
+      voteStatus: map['voteStatus'], // Corrected spelling
       district: map['district'],
       pollingDivision: map['polling_division'],
     );
