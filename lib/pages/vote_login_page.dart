@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../services/login_service.dart'; // Import the LoginService
+import '../models/user.dart'; // Import the User model
 
 class VoteLoginPage extends StatefulWidget {
   const VoteLoginPage({super.key});
@@ -9,16 +11,17 @@ class VoteLoginPage extends StatefulWidget {
 
 class VoteLoginPageState extends State<VoteLoginPage> {
   final TextEditingController _nicController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _idController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   int _adminTapCount = 0;
   static const String adminSecret = "admin123"; // Admin Secret Key
+  final LoginService _loginService = LoginService(); // Initialize LoginService
 
   @override
   void dispose() {
     _nicController.dispose();
-    _passwordController.dispose();
+    _idController.dispose();
     super.dispose();
   }
 
@@ -30,13 +33,12 @@ class VoteLoginPageState extends State<VoteLoginPage> {
     return oldNICRegex.hasMatch(nic) || newNICRegex.hasMatch(nic);
   }
 
-  bool isValidPassword(String password) {
-    final passwordRegex =
-        RegExp(r'^\d{2}-\d{2}-\d{5}$'); // Password format 20-10-12345
-    return passwordRegex.hasMatch(password);
+  bool isValidUserId(String userId) {
+    final userIdRegex = RegExp(r'^\d{2}-\d{2}-\d{5}$'); // Format: 10-20-12345
+    return userIdRegex.hasMatch(userId);
   }
 
-  void _submit() {
+  Future<void> _submit() async {
     if (_nicController.text == adminSecret) {
       // If admin secret is entered, increase tap count
       _adminTapCount++;
@@ -51,10 +53,30 @@ class VoteLoginPageState extends State<VoteLoginPage> {
 
     // Normal user validation
     if (_formKey.currentState!.validate()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('NIC and Password are valid. Proceeding...')),
-      );
+      final nic = _nicController.text;
+      final userId = _idController.text;
+
+      try {
+        final user = await _loginService.validateLogin(nic, userId);
+
+        // Debug: Log the user object
+        print('User: $user');
+
+        if (user != null) {
+          Navigator.pushNamed(context, '/verify',
+              arguments: user); // Pass User object to Verify Page
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+                content: Text('Invalid NIC, User ID, or Vote Status')),
+          );
+        }
+      } catch (e) {
+        print('Error during login: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('An error occurred. Please try again.')),
+        );
+      }
     }
   }
 
@@ -76,7 +98,7 @@ class VoteLoginPageState extends State<VoteLoginPage> {
               const Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  'Enter your NIC',
+                  'Enter your NIC (Old or New)',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ),
@@ -100,23 +122,22 @@ class VoteLoginPageState extends State<VoteLoginPage> {
               const Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  'Enter your ID',
+                  'Enter your User ID',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ),
               const SizedBox(height: 5),
               TextFormField(
-                controller: _passwordController,
+                controller: _idController,
                 decoration: const InputDecoration(
-                  hintText: 'Enter your ID',
+                  hintText: 'Enter your User ID',
                   border: OutlineInputBorder(),
                 ),
-                obscureText: true,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Password cannot be empty';
-                  } else if (!isValidPassword(value)) {
-                    return 'Enter a valid password';
+                    return 'User ID cannot be empty';
+                  } else if (!isValidUserId(value)) {
+                    return 'Enter a valid User ID (e.g., 10-20-12345)';
                   }
                   return null;
                 },
