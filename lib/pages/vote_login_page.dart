@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../services/login_service.dart'; // Import the LoginService
-import '../models/user.dart'; // Import the User model
 
 class VoteLoginPage extends StatefulWidget {
   const VoteLoginPage({super.key});
