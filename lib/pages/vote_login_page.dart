@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/login_service.dart'; // Import the LoginService
+import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart'; // Import JWT package
 
 class VoteLoginPage extends StatefulWidget {
   const VoteLoginPage({super.key});
@@ -56,14 +57,17 @@ class VoteLoginPageState extends State<VoteLoginPage> {
       final userId = _idController.text;
 
       try {
-        final user = await _loginService.validateLogin(nic, userId);
+        final token = await _loginService.validateLogin(nic, userId);
 
-        // Debug: Log the user object
-        print('User: $user');
+        if (token != null) {
+          final jwt =
+              JWT.verify(token, SecretKey('1020')); // Verify and decode token
+          JWT.verify(token, SecretKey('1020')); // Verify and decode token
+          JWT.verify(token, SecretKey("1020")); // Verify and decode token
+          final user = jwt.payload; // Extract user details
 
-        if (user != null) {
           Navigator.pushNamed(context, '/verify',
-              arguments: user); // Pass User object to Verify Page
+              arguments: user); // Pass user details to Verify Page
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
