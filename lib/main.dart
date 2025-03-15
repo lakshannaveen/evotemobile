@@ -1,4 +1,5 @@
 import 'package:evoteapp/pages/cast_page.dart';
+import 'package:evoteapp/pages/contact_us.dart';
 import 'package:firebase_core/firebase_core.dart'; // Import Firebase Core
 import 'package:evoteapp/pages/admin_login_page.dart';
 import 'package:flutter/material.dart';
@@ -31,6 +32,7 @@ class MyApp extends StatelessWidget {
         '/votelogin': (context) => const VoteLoginPage(),
         '/results': (context) => const ResultPage(),
         '/admin': (context) => const AdminLoginPage(),
+        '/contactus': (context) => const ContactUsPage(),
         '/verify': (context) => VerifyPage(),
         '/cast': (context) => CastPage(),
       },
