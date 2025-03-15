@@ -22,6 +22,13 @@ class VerifyPage extends StatelessWidget {
                 style: const TextStyle(fontSize: 18)),
             Text('Polling Division: ${user['pollingDivision']}',
                 style: const TextStyle(fontSize: 18)),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pushNamed(context, '/cast');
+              },
+              child: const Text('Go to Vote'),
+            ),
           ],
         ),
       ),
