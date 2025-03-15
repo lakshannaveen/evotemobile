@@ -26,7 +26,10 @@ class ContactUsPage extends StatelessWidget {
                   children: const [
                     Text(
                       'If you have any questions, please call the following number:',
-                      style: TextStyle(fontSize: 18),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     SizedBox(height: 10),
                     Text(
