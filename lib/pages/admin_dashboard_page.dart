@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:evoteapp/config/theme.dart';
-import 'package:evoteapp/pages/manage_voters_page.dart'; // Add this import
+import 'package:evoteapp/pages/manage_voters_page.dart';
+import 'package:evoteapp/pages/manage_candidates_page.dart';
 
 class AdminDashboardPage extends StatefulWidget {
   const AdminDashboardPage({super.key});
@@ -61,6 +62,19 @@ class AdminDashboardPageState extends State<AdminDashboardPage> {
                     context,
                     MaterialPageRoute(
                       builder: (context) => const ManageVotersPage(),
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.person_outline),
+                title: const Text('Manage Candidates'),
+                onTap: () {
+                  Navigator.pop(context); // Close drawer
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ManageCandidatesPage(),
                     ),
                   );
                 },
