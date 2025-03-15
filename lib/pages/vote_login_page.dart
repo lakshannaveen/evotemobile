@@ -60,19 +60,33 @@ class VoteLoginPageState extends State<VoteLoginPage> {
       final userId = _idController.text;
 
       try {
-        final token = await _loginService.validateLogin(nic, userId);
+        final response = await _loginService.validateLogin(nic, userId);
 
         await Future.delayed(const Duration(seconds: 1)); // Simulate loading
 
-        if (token != null) {
-          final jwt = JWT.verify(token, SecretKey('1020'));
-          final user = jwt.payload;
+        if (response != null) {
+          if (response == 'Incorrect User ID') {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Your ID is incorrect')),
+            );
+          } else if (response == 'Incorrect NIC') {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Your NIC is incorrect')),
+            );
+          } else if (response == 'You have already voted') {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('You have already voted')),
+            );
+          } else {
+            final jwt = JWT.verify(response, SecretKey('1020'));
+            final user = jwt.payload;
 
-          Navigator.pushNamed(context, '/verify', arguments: user);
+            Navigator.pushNamed(context, '/verify', arguments: user);
+          }
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-                content: Text('Invalid NIC, User ID, or Vote Status')),
+                content: Text('An error occurred. Please try again.')),
           );
         }
       } catch (e) {

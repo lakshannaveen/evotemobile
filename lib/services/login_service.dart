@@ -14,14 +14,22 @@ class LoginService {
       QuerySnapshot querySnapshot = await _firestore
           .collection(_collection)
           .where('voterId', isEqualTo: userId)
-          .where('voteStatus', isEqualTo: false)
-          .where('nic', isEqualTo: normalizedNic)
           .get();
 
       if (querySnapshot.docs.isNotEmpty) {
         final documentData =
             querySnapshot.docs.first.data() as Map<String, dynamic>;
         final user = User.fromMap(documentData);
+
+        // Check if the user has already voted
+        if (user.voteStatus == true) {
+          return 'You have already voted'; // Custom error message
+        }
+
+        // Check if NIC matches
+        if (user.nic != normalizedNic) {
+          return 'Incorrect NIC'; // Custom error message
+        }
 
         // Generate JWT token with user details
         final jwt = JWT({
@@ -37,11 +45,11 @@ class LoginService {
             jwt.sign(SecretKey(_jwtSecret), expiresIn: Duration(hours: 1));
         return token; // Return the generated token
       } else {
-        return null;
+        return 'Incorrect User ID'; // Custom error message
       }
     } catch (e) {
       print('Error validating login: $e');
-      return null;
+      return 'An error occurred. Please try again.';
     }
   }
 }
