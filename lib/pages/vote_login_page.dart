@@ -120,7 +120,7 @@ class VoteLoginPageState extends State<VoteLoginPage> {
               const Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  'Enter your NIC (Old or New)',
+                  'Enter your NIC ',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ),

@@ -14,9 +14,14 @@ class AdminLoginPageState extends State<AdminLoginPage> {
   final TextEditingController _adminController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  bool _isLoading = false; // State to track login process
 
   void _adminLogin() async {
     if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isLoading = true; // Show loading animation
+      });
+
       final service = AdminLoginService();
       final token = await service.adminLogin(
         _adminController.text.trim(),
@@ -28,15 +33,28 @@ class AdminLoginPageState extends State<AdminLoginPage> {
           const SnackBar(content: Text('Admin Login Successful!')),
         );
 
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (context) => const AdminDashboardPage(),
-          ),
-        );
+        // Wait for 1 second before navigating
+        await Future.delayed(const Duration(seconds: 1));
+
+        // Navigate to the admin dashboard
+        if (mounted) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (context) => const AdminDashboardPage(),
+            ),
+          );
+        }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Invalid credentials')),
         );
+      }
+
+      // Hide loading animation
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
       }
     }
   }
@@ -104,8 +122,17 @@ class AdminLoginPageState extends State<AdminLoginPage> {
                 ),
                 const SizedBox(height: 20),
                 ElevatedButton(
-                  onPressed: _adminLogin,
-                  child: const Text('Admin Login'),
+                  onPressed: _isLoading ? null : _adminLogin,
+                  child: _isLoading
+                      ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Text('Admin Login'),
                 ),
               ],
             ),
