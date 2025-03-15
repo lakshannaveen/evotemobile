@@ -36,6 +36,16 @@ class HomePage extends StatelessWidget {
                 child: const Text('Results'),
               ),
             ),
+            const SizedBox(height: 30),
+            SizedBox(
+              width: 200, // Adjust button width
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, '/contactus');
+                },
+                child: const Text('Contact Us'),
+              ),
+            ),
           ],
         ),
       ),

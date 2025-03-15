@@ -50,9 +50,8 @@ class VoterService {
   Future<List<QueryDocumentSnapshot>> searchVoters(String query) async {
     try {
       if (query.isEmpty) {
-        QuerySnapshot querySnapshot = await _firestore
-          .collection(_collection)
-          .get();
+        QuerySnapshot querySnapshot =
+            await _firestore.collection(_collection).get();
         return querySnapshot.docs;
       }
 
@@ -63,13 +62,13 @@ class VoterService {
       QuerySnapshot nicResults = await _firestore
           .collection(_collection)
           .where('nic', isGreaterThanOrEqualTo: lowercaseQuery)
-          .where('nic', isLessThan: lowercaseQuery + '\uf8ff')
+          .where('nic', isLessThan: '$lowercaseQuery\uf8ff')
           .get();
 
       QuerySnapshot nameResults = await _firestore
           .collection(_collection)
           .where('name', isGreaterThanOrEqualTo: lowercaseQuery)
-          .where('name', isLessThan: lowercaseQuery + '\uf8ff')
+          .where('name', isLessThan: '$lowercaseQuery\uf8ff')
           .get();
 
       // Combine the results

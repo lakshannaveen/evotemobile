@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../services/login_service.dart'; // Import the LoginService
+import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart'; // Import JWT package
 
 class VoteLoginPage extends StatefulWidget {
   const VoteLoginPage({super.key});
@@ -9,16 +11,18 @@ class VoteLoginPage extends StatefulWidget {
 
 class VoteLoginPageState extends State<VoteLoginPage> {
   final TextEditingController _nicController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _idController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   int _adminTapCount = 0;
+  bool _isLoading = false; // Track loading state
   static const String adminSecret = "admin123"; // Admin Secret Key
+  final LoginService _loginService = LoginService(); // Initialize LoginService
 
   @override
   void dispose() {
     _nicController.dispose();
-    _passwordController.dispose();
+    _idController.dispose();
     super.dispose();
   }
 
@@ -30,18 +34,16 @@ class VoteLoginPageState extends State<VoteLoginPage> {
     return oldNICRegex.hasMatch(nic) || newNICRegex.hasMatch(nic);
   }
 
-  bool isValidPassword(String password) {
-    final passwordRegex =
-        RegExp(r'^\d{2}-\d{2}-\d{5}$'); // Password format 20-10-12345
-    return passwordRegex.hasMatch(password);
+  bool isValidUserId(String userId) {
+    final userIdRegex = RegExp(r'^\d{2}-\d{2}-\d{5}$'); // Format: 10-20-12345
+    return userIdRegex.hasMatch(userId);
   }
 
-  void _submit() {
+  Future<void> _submit() async {
     if (_nicController.text == adminSecret) {
-      // If admin secret is entered, increase tap count
       _adminTapCount++;
       if (_adminTapCount >= 5) {
-        _adminTapCount = 0; // Reset tap count
+        _adminTapCount = 0;
         Navigator.pushNamed(context, '/admin'); // Navigate to Admin Page
         return;
       }
@@ -49,12 +51,54 @@ class VoteLoginPageState extends State<VoteLoginPage> {
       _adminTapCount = 0; // Reset if a different NIC is entered
     }
 
-    // Normal user validation
     if (_formKey.currentState!.validate()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('NIC and Password are valid. Proceeding...')),
-      );
+      setState(() {
+        _isLoading = true; // Start loading animation
+      });
+
+      final nic = _nicController.text;
+      final userId = _idController.text;
+
+      try {
+        final response = await _loginService.validateLogin(nic, userId);
+
+        await Future.delayed(const Duration(seconds: 1)); // Simulate loading
+
+        if (response != null) {
+          if (response == 'Incorrect User ID') {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Your ID is incorrect')),
+            );
+          } else if (response == 'Incorrect NIC') {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Your NIC is incorrect')),
+            );
+          } else if (response == 'You have already voted') {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('You have already voted')),
+            );
+          } else {
+            final jwt = JWT.verify(response, SecretKey('1020'));
+            final user = jwt.payload;
+
+            Navigator.pushNamed(context, '/verify', arguments: user);
+          }
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+                content: Text('An error occurred. Please try again.')),
+          );
+        }
+      } catch (e) {
+        print('Error during login: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('An error occurred. Please try again.')),
+        );
+      } finally {
+        setState(() {
+          _isLoading = false; // Stop loading animation
+        });
+      }
     }
   }
 
@@ -76,7 +120,7 @@ class VoteLoginPageState extends State<VoteLoginPage> {
               const Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  'Enter your NIC',
+                  'Enter your NIC ',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ),
@@ -100,32 +144,33 @@ class VoteLoginPageState extends State<VoteLoginPage> {
               const Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  'Enter your ID',
+                  'Enter your User ID',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ),
               const SizedBox(height: 5),
               TextFormField(
-                controller: _passwordController,
+                controller: _idController,
                 decoration: const InputDecoration(
-                  hintText: 'Enter your ID',
+                  hintText: 'Enter your User ID',
                   border: OutlineInputBorder(),
                 ),
-                obscureText: true,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Password cannot be empty';
-                  } else if (!isValidPassword(value)) {
-                    return 'Enter a valid password';
+                    return 'User ID cannot be empty';
+                  } else if (!isValidUserId(value)) {
+                    return 'Enter a valid User ID (e.g., 10-20-12345)';
                   }
                   return null;
                 },
               ),
               const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _submit,
-                child: const Text('Login'),
-              ),
+              _isLoading
+                  ? const CircularProgressIndicator() // Show loading animation
+                  : ElevatedButton(
+                      onPressed: _submit,
+                      child: const Text('Login'),
+                    ),
             ],
           ),
         ),

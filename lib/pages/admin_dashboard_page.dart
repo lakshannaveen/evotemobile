@@ -35,7 +35,7 @@ class AdminDashboardPageState extends State<AdminDashboardPage> {
             children: [
               const DrawerHeader(
                 decoration: BoxDecoration(
-                  color: Colors.blue,
+                  color: Colors.red,
                 ),
                 child: Text(
                   'Admin Controls',
