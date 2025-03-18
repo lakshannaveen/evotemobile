@@ -382,115 +382,196 @@ class _CandidateFormDialogState extends State<_CandidateFormDialog> {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async => false,
-      child: AlertDialog(
-        title: Text(widget.initialValue == null ? 'Add Candidate' : 'Edit Candidate'),
-        content: SingleChildScrollView(
-          child: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextFormField(
-                  controller: _nameEnglishController,
-                  decoration: const InputDecoration(
-                    labelText: 'Name (English)',
-                    border: OutlineInputBorder(),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter the name in English';
-                    }
-                    return null;
-                  },
+      child: Dialog(
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
+        child: Container(
+          width: MediaQuery.of(context).size.width * 0.9,
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(bottom: 24.0),
+                child: Text(
+                  widget.initialValue == null ? 'Add Candidate' : 'Edit Candidate',
+                  style: Theme.of(context).textTheme.headlineSmall,
+                  textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _nameSinhalaController,
-                  decoration: const InputDecoration(
-                    labelText: 'Name (Sinhala)',
-                    border: OutlineInputBorder(),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter the name in Sinhala';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _nameTamilController,
-                  decoration: const InputDecoration(
-                    labelText: 'Name (Tamil)',
-                    border: OutlineInputBorder(),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter the name in Tamil';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: _pickPartyLogo,
-                        icon: const Icon(Icons.upload),
-                        label: const Text('Upload Party Logo'),
-                      ),
+              ),
+              Flexible(
+                child: SingleChildScrollView(
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        // Name Section
+                        const Text(
+                          'Candidate Names',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: _nameEnglishController,
+                          decoration: const InputDecoration(
+                            labelText: 'Name (English)',
+                            border: OutlineInputBorder(),
+                            fillColor: Colors.white,
+                            filled: true,
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter the name in English';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: _nameSinhalaController,
+                          decoration: const InputDecoration(
+                            labelText: 'Name (Sinhala)',
+                            border: OutlineInputBorder(),
+                            fillColor: Colors.white,
+                            filled: true,
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter the name in Sinhala';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: _nameTamilController,
+                          decoration: const InputDecoration(
+                            labelText: 'Name (Tamil)',
+                            border: OutlineInputBorder(),
+                            fillColor: Colors.white,
+                            filled: true,
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter the name in Tamil';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 24),
+
+                        // Party Logo Section
+                        const Text(
+                          'Party Logo',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Container(
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey.shade300),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: ElevatedButton.icon(
+                                      onPressed: _pickPartyLogo,
+                                      icon: const Icon(Icons.upload),
+                                      label: const Text('Upload Party Logo'),
+                                      style: ElevatedButton.styleFrom(
+                                        padding: const EdgeInsets.symmetric(vertical: 12),
+                                        backgroundColor: Colors.redAccent,
+                                      ),
+                                    ),
+                                  ),
+                                  if (_partyLogo != null) ...[
+                                    const SizedBox(width: 8),
+                                    IconButton(
+                                      icon: const Icon(Icons.clear),
+                                      onPressed: () => setState(() => _partyLogo = null),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                              if (_partyLogo != null)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 16.0),
+                                  child: Container(
+                                    width: 80,
+                                    height: 80,
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      border: Border.all(color: Colors.grey.shade300),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: Image.memory(
+                                      Uri.parse(_partyLogo!).data!.contentAsBytes(),
+                                      fit: BoxFit.contain,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                    if (_partyLogo != null) ...[
-                      const SizedBox(width: 8),
-                      IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () => setState(() => _partyLogo = null),
-                      ),
-                    ],
-                  ],
-                ),
-                if (_partyLogo != null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8.0),
-                    child: SizedBox(
-                      width: 60,
-                      height: 60,
-                      child: Image.memory(
-                        Uri.parse(_partyLogo!).data!.contentAsBytes(),
-                        fit: BoxFit.contain,
-                      ),
-                    ),
                   ),
-              ],
-            ),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    ),
+                    child: const Text('Cancel', style: TextStyle(color: Colors.redAccent)),
+                  ),
+                  const SizedBox(width: 16),
+                  ElevatedButton(
+                    onPressed: () {
+                      if (_formKey.currentState!.validate()) {
+                        if (_partyLogo == null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Please upload a party logo')),
+                          );
+                          return;
+                        }
+                        widget.onSubmit({
+                          'nameEnglish': _nameEnglishController.text.toLowerCase(),
+                          'nameSinhala': _nameSinhalaController.text,
+                          'nameTamil': _nameTamilController.text,
+                          'partyLogo': _partyLogo,
+                        });
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      backgroundColor: Colors.redAccent,
+                    ),
+                    child: const Text('Save'),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              if (_formKey.currentState!.validate()) {
-                if (_partyLogo == null) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Please upload a party logo')),
-                  );
-                  return;
-                }
-                widget.onSubmit({
-                  'nameEnglish': _nameEnglishController.text.toLowerCase(),
-                  'nameSinhala': _nameSinhalaController.text,
-                  'nameTamil': _nameTamilController.text,
-                  'partyLogo': _partyLogo,
-                });
-              }
-            },
-            child: const Text('Save'),
-          ),
-        ],
       ),
     );
   }
