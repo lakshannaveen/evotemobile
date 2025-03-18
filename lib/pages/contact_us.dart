@@ -14,6 +14,7 @@ class _ContactUsPageState extends State<ContactUsPage> {
   final _formKey = GlobalKey<FormState>();
   final _nicController = TextEditingController();
   final _messageController = TextEditingController();
+  final _phoneController = TextEditingController();
   final ContactUsService _contactUsService = ContactUsService();
 
   void _launchPhone(String phoneNumber) async {
@@ -43,12 +44,16 @@ class _ContactUsPageState extends State<ContactUsPage> {
       final contactUsData = ContactUsModel(
         nic: _nicController.text,
         message: _messageController.text,
+        phoneNumber: _phoneController.text,
       );
       try {
         await _contactUsService.submitContactUsData(contactUsData);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Data submitted successfully')),
         );
+        _nicController.clear();
+        _messageController.clear();
+        _phoneController.clear();
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error submitting data: $e')),
@@ -133,6 +138,24 @@ class _ContactUsPageState extends State<ContactUsPage> {
                                   RegExp(r'^[0-9]{9}[vVxX]|[0-9]{12}$');
                               if (!nicPattern.hasMatch(value)) {
                                 return 'Please enter a valid NIC';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 10),
+                          TextFormField(
+                            controller: _phoneController,
+                            decoration: const InputDecoration(
+                                labelText: 'Phone Number'),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter your phone number';
+                              }
+                              // Validate Sri Lankan phone number
+                              final phonePattern =
+                                  RegExp(r'^(?:0|94|\+94)?[1-9]\d{8}$');
+                              if (!phonePattern.hasMatch(value)) {
+                                return 'Please enter a valid phone number';
                               }
                               return null;
                             },
