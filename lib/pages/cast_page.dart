@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'dart:convert';
 import 'dart:typed_data';
 
 class CastPage extends StatefulWidget {
@@ -63,32 +62,28 @@ class _CastPageState extends State<CastPage> {
                       }
                     }
 
-                    return RadioListTile<String>(
-                      title: Row(
+                    return ListTile(
+                      leading: imageBytes != null
+                          ? Image.memory(imageBytes,
+                              width: 40, height: 40, fit: BoxFit.contain)
+                          : null,
+                      title: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          if (imageBytes != null)
-                            Padding(
-                              padding: const EdgeInsets.only(right: 16.0),
-                              child: Image.memory(imageBytes,
-                                  width: 40, height: 40, fit: BoxFit.contain),
-                            ),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(candidate['nameSinhala'] ?? 'N/A'),
-                              Text(candidate['nameEnglish'] ?? 'N/A'),
-                              Text(candidate['nameTamil'] ?? 'N/A'),
-                            ],
-                          ),
+                          Text(candidate['nameSinhala'] ?? 'N/A'),
+                          Text(candidate['nameEnglish'] ?? 'N/A'),
+                          Text(candidate['nameTamil'] ?? 'N/A'),
                         ],
                       ),
-                      value: candidates[index].id,
-                      groupValue: _selectedCandidate,
-                      onChanged: (value) {
-                        setState(() {
-                          _selectedCandidate = value;
-                        });
-                      },
+                      trailing: Radio<String>(
+                        value: candidates[index].id,
+                        groupValue: _selectedCandidate,
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedCandidate = value;
+                          });
+                        },
+                      ),
                     );
                   },
                 );
