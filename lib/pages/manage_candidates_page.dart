@@ -345,16 +345,29 @@ class _CandidateFormDialogState extends State<_CandidateFormDialog> {
     try {
       FilePickerResult? result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
-        allowedExtensions: ['svg'],
+        allowedExtensions: ['png', 'jpg', 'jpeg', 'svg', 'webp', 'gif'],
+        withData: true, // Ensure we get the file bytes
       );
 
-      if (result != null) {
+      if (result != null && result.files.first.bytes != null) {
+        final String mimeType = switch (result.files.first.extension?.toLowerCase()) {
+          'svg' => 'image/svg+xml',
+          'png' => 'image/png',
+          'jpg' => 'image/jpeg',
+          'jpeg' => 'image/jpeg',
+          'webp' => 'image/webp',
+          'gif' => 'image/gif',
+          _ => 'image/png'
+        };
+        
         setState(() {
           _partyLogo = Uri.dataFromBytes(
             result.files.first.bytes!,
-            mimeType: 'image/svg+xml'
+            mimeType: mimeType
           ).toString();
         });
+      } else {
+        throw 'No file selected or file is empty';
       }
     } catch (e) {
       if (mounted) {
@@ -425,7 +438,7 @@ class _CandidateFormDialogState extends State<_CandidateFormDialog> {
                       child: ElevatedButton.icon(
                         onPressed: _pickPartyLogo,
                         icon: const Icon(Icons.upload),
-                        label: const Text('Upload Party Logo (SVG)'),
+                        label: const Text('Upload Party Logo'),
                       ),
                     ),
                     if (_partyLogo != null) ...[
