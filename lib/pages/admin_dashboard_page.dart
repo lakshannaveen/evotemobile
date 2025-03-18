@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:evoteapp/config/theme.dart';
 import 'package:evoteapp/pages/manage_voters_page.dart';
 import 'package:evoteapp/pages/manage_candidates_page.dart';
+import 'package:evoteapp/pages/view_contact_submissions_page.dart';
 
 class AdminDashboardPage extends StatefulWidget {
   const AdminDashboardPage({super.key});
@@ -75,6 +76,19 @@ class AdminDashboardPageState extends State<AdminDashboardPage> {
                     context,
                     MaterialPageRoute(
                       builder: (context) => const ManageCandidatesPage(),
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.message),
+                title: const Text('Contact Submissions'),
+                onTap: () {
+                  Navigator.pop(context); // Close drawer
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ViewContactSubmissionsPage(),
                     ),
                   );
                 },
