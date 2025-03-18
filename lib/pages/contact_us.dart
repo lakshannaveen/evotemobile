@@ -31,7 +31,7 @@ class ContactUsPage extends StatelessWidget {
     const String phoneNumber =
         '+94 123 456 789'; // Replace with any contact number
     const String email =
-        'lakshannaveen578@gmail.com'; // Replace with any contact email
+        'EvoteContact@gmail.com'; // Replace with any contact email
 
     return Scaffold(
       appBar: AppBar(
