@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class VerifyPage extends StatelessWidget {
+  const VerifyPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     final user =
@@ -22,7 +24,7 @@ class VerifyPage extends StatelessWidget {
                 style: const TextStyle(fontSize: 18)),
             Text('Polling Division: ${user['pollingDivision']}',
                 style: const TextStyle(fontSize: 18)),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
                 Navigator.pushNamed(context, '/cast');

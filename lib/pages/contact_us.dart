@@ -22,8 +22,8 @@ class ContactUsPage extends StatelessWidget {
                   border: Border.all(color: Colors.blue, width: 2),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Column(
-                  children: const [
+                child: const Column(
+                  children: [
                     Text(
                       'If you have any questions, please call the following number:',
                       style: TextStyle(

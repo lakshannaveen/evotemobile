@@ -23,7 +23,8 @@ class CandidateService {
   }
 
   // Update an existing candidate
-  Future<void> updateCandidate(String id, Map<String, dynamic> candidate) async {
+  Future<void> updateCandidate(
+      String id, Map<String, dynamic> candidate) async {
     try {
       await _firestore.collection(_collection).doc(id).update({
         ...candidate,
@@ -49,9 +50,8 @@ class CandidateService {
   Future<List<QueryDocumentSnapshot>> searchCandidates(String query) async {
     try {
       if (query.isEmpty) {
-        QuerySnapshot querySnapshot = await _firestore
-          .collection(_collection)
-          .get();
+        QuerySnapshot querySnapshot =
+            await _firestore.collection(_collection).get();
         return querySnapshot.docs;
       }
 
@@ -61,19 +61,19 @@ class CandidateService {
       QuerySnapshot sinhalaResults = await _firestore
           .collection(_collection)
           .where('nameSinhala', isGreaterThanOrEqualTo: lowercaseQuery)
-          .where('nameSinhala', isLessThan: lowercaseQuery + '\uf8ff')
+          .where('nameSinhala', isLessThan: '$lowercaseQuery\uf8ff')
           .get();
 
       QuerySnapshot englishResults = await _firestore
           .collection(_collection)
           .where('nameEnglish', isGreaterThanOrEqualTo: lowercaseQuery)
-          .where('nameEnglish', isLessThan: lowercaseQuery + '\uf8ff')
+          .where('nameEnglish', isLessThan: '$lowercaseQuery\uf8ff')
           .get();
 
       QuerySnapshot tamilResults = await _firestore
           .collection(_collection)
           .where('nameTamil', isGreaterThanOrEqualTo: lowercaseQuery)
-          .where('nameTamil', isLessThan: lowercaseQuery + '\uf8ff')
+          .where('nameTamil', isLessThan: '$lowercaseQuery\uf8ff')
           .get();
 
       // Combine all results

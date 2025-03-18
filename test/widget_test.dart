@@ -6,10 +6,10 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'Voting App',
-        home: const HomePage() // Ensure HomePage is set as the initial screen
+        home: HomePage() // Ensure HomePage is set as the initial screen
         );
   }
 }

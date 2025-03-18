@@ -165,6 +165,13 @@ class VoteLoginPageState extends State<VoteLoginPage> {
                 },
               ),
               const SizedBox(height: 20),
+              TextButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, '/contactus');
+                },
+                child: const Text('Forgot UserID? Contact Us'),
+              ),
+              const SizedBox(height: 20),
               _isLoading
                   ? const CircularProgressIndicator() // Show loading animation
                   : ElevatedButton(

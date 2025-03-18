@@ -41,8 +41,8 @@ class LoginService {
           'pollingDivision': user.pollingDivision,
         });
 
-        final token =
-            jwt.sign(SecretKey(_jwtSecret), expiresIn: Duration(hours: 1));
+        final token = jwt.sign(SecretKey(_jwtSecret),
+            expiresIn: const Duration(hours: 1));
         return token; // Return the generated token
       } else {
         return 'Incorrect User ID'; // Custom error message
