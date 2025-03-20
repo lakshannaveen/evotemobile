@@ -39,7 +39,7 @@ class _CastPageState extends State<CastPage> {
                 }
 
                 if (snapshot.hasError) {
-                  return Center(child: Text('Error: \${snapshot.error}'));
+                  return Center(child: Text('Error: ${snapshot.error}'));
                 }
 
                 final candidates = snapshot.data?.docs ?? [];
@@ -61,7 +61,7 @@ class _CastPageState extends State<CastPage> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                         content: Text(
-                            'Vote submitted for candidate ID: \${_selectedCandidate.value}')),
+                            'Vote submitted for candidate ID: ${_selectedCandidate.value}')),
                   );
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -97,47 +97,62 @@ class _CastPageState extends State<CastPage> {
 
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // Party Logo on the left
-              if (imageBytes != null)
-                Image.memory(imageBytes,
-                    width: 50, height: 50, fit: BoxFit.contain),
-
-              const SizedBox(width: 16),
-
-              // Candidate Names (Centered)
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Text(candidate['nameSinhala'] ?? 'N/A',
-                        textAlign: TextAlign.center),
-                    Text(candidate['nameEnglish'] ?? 'N/A',
-                        textAlign: TextAlign.center),
-                    Text(candidate['nameTamil'] ?? 'N/A',
-                        textAlign: TextAlign.center),
-                  ],
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.grey[200],
+              borderRadius: BorderRadius.circular(10),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.5),
+                  spreadRadius: 2,
+                  blurRadius: 5,
+                  offset: const Offset(0, 3),
                 ),
-              ),
+              ],
+            ),
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Party Logo on the left
+                if (imageBytes != null)
+                  Image.memory(imageBytes,
+                      width: 50, height: 50, fit: BoxFit.contain),
 
-              // Radio Button on the right
-              ValueListenableBuilder<String?>(
-                valueListenable: _selectedCandidate,
-                builder: (context, selected, child) {
-                  return Radio<String>(
-                    value: candidates[index].id,
-                    groupValue: selected,
-                    onChanged: (value) {
-                      if (value != null) {
-                        _selectedCandidate.value = value;
-                      }
-                    },
-                  );
-                },
-              ),
-            ],
+                const SizedBox(width: 16),
+
+                // Candidate Names (Centered)
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(candidate['nameSinhala'] ?? 'N/A',
+                          textAlign: TextAlign.center),
+                      Text(candidate['nameEnglish'] ?? 'N/A',
+                          textAlign: TextAlign.center),
+                      Text(candidate['nameTamil'] ?? 'N/A',
+                          textAlign: TextAlign.center),
+                    ],
+                  ),
+                ),
+
+                // Radio Button on the right
+                ValueListenableBuilder<String?>(
+                  valueListenable: _selectedCandidate,
+                  builder: (context, selected, child) {
+                    return Radio<String>(
+                      value: candidates[index].id,
+                      groupValue: selected,
+                      onChanged: (value) {
+                        if (value != null) {
+                          _selectedCandidate.value = value;
+                        }
+                      },
+                    );
+                  },
+                ),
+              ],
+            ),
           ),
         );
       },
