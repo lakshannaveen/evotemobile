@@ -91,37 +91,53 @@ class _CastPageState extends State<CastPage> {
             imageBytes =
                 Uri.parse(candidate['partyLogo']).data?.contentAsBytes();
           } catch (e) {
-            debugPrint('Error parsing image: \$e');
+            debugPrint('Error parsing image: $e');
           }
         }
 
-        return ListTile(
-          leading: imageBytes != null
-              ? Image.memory(imageBytes,
-                  width: 40, height: 40, fit: BoxFit.contain)
-              : null,
-          title: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Text(candidate['nameSinhala'] ?? 'N/A'),
-              Text(candidate['nameEnglish'] ?? 'N/A'),
-              Text(candidate['nameTamil'] ?? 'N/A'),
-            ],
-          ),
-          trailing: ValueListenableBuilder<String?>(
-            valueListenable: _selectedCandidate,
-            builder: (context, selected, child) {
-              return Radio<String>(
-                value: candidates[index].id,
-                groupValue: selected,
-                onChanged: (value) {
-                  if (value != null) {
-                    _selectedCandidate.value =
-                        value; // Only updates the radio button state
-                  }
+              // Party Logo on the left
+              if (imageBytes != null)
+                Image.memory(imageBytes,
+                    width: 50, height: 50, fit: BoxFit.contain),
+
+              const SizedBox(width: 16),
+
+              // Candidate Names (Centered)
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(candidate['nameSinhala'] ?? 'N/A',
+                        textAlign: TextAlign.center),
+                    Text(candidate['nameEnglish'] ?? 'N/A',
+                        textAlign: TextAlign.center),
+                    Text(candidate['nameTamil'] ?? 'N/A',
+                        textAlign: TextAlign.center),
+                  ],
+                ),
+              ),
+
+              // Radio Button on the right
+              ValueListenableBuilder<String?>(
+                valueListenable: _selectedCandidate,
+                builder: (context, selected, child) {
+                  return Radio<String>(
+                    value: candidates[index].id,
+                    groupValue: selected,
+                    onChanged: (value) {
+                      if (value != null) {
+                        _selectedCandidate.value = value;
+                      }
+                    },
+                  );
                 },
-              );
-            },
+              ),
+            ],
           ),
         );
       },
