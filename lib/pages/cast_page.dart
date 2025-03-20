@@ -39,7 +39,7 @@ class _CastPageState extends State<CastPage> {
                 }
 
                 if (snapshot.hasError) {
-                  return Center(child: Text('Error: ${snapshot.error}'));
+                  return Center(child: Text('Error: \${snapshot.error}'));
                 }
 
                 final candidates = snapshot.data?.docs ?? [];
@@ -50,6 +50,28 @@ class _CastPageState extends State<CastPage> {
 
                 return _buildCandidateList(candidates);
               },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: ElevatedButton(
+              onPressed: () {
+                if (_selectedCandidate.value != null) {
+                  // Submit vote logic here
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                        content: Text(
+                            'Vote submitted for candidate ID: \${_selectedCandidate.value}')),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content: Text(
+                            'Please select a candidate before submitting.')),
+                  );
+                }
+              },
+              child: const Text('Submit'),
             ),
           ),
         ],
@@ -69,7 +91,7 @@ class _CastPageState extends State<CastPage> {
             imageBytes =
                 Uri.parse(candidate['partyLogo']).data?.contentAsBytes();
           } catch (e) {
-            debugPrint('Error parsing image: $e');
+            debugPrint('Error parsing image: \$e');
           }
         }
 
