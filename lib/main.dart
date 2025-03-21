@@ -1,3 +1,4 @@
+import 'package:evoteapp/pages/Guidlines.dart';
 import 'package:evoteapp/pages/cast_page.dart';
 import 'package:evoteapp/pages/contact_us.dart';
 import 'package:firebase_core/firebase_core.dart'; // Import Firebase Core
@@ -33,6 +34,7 @@ class MyApp extends StatelessWidget {
         '/results': (context) => const ResultPage(),
         '/admin': (context) => const AdminLoginPage(),
         '/contactus': (context) => const ContactUsPage(),
+        '/guidlines': (context) => const GuidelinePage(),
         '/verify': (context) => VerifyPage(),
         '/cast': (context) => CastPage(),
       },
