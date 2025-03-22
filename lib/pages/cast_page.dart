@@ -78,7 +78,8 @@ class _CastPageState extends State<CastPage> {
                   );
 
                   if (result == 'Vote submitted successfully') {
-                    // Optionally, navigate or update UI if needed
+                    // Navigate to the homepage after vote submission
+                    Navigator.pushReplacementNamed(context, '/');
                   }
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
