@@ -1,19 +1,25 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:evoteapp/models/user.dart';
 
 class VoterService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final String _collection = 'voters';
 
   // Get all voters
-  Stream<QuerySnapshot> getVoters() {
-    return _firestore.collection(_collection).snapshots();
+  Stream<List<User>> getVoters() {
+    return _firestore.collection(_collection).snapshots().map(
+      (snapshot) => snapshot.docs.map((doc) => User.fromMap({
+        'voterId': doc.id,
+        ...doc.data() as Map<String, dynamic>
+      })).toList()
+    );
   }
 
   // Add a new voter
-  Future<void> addVoter(Map<String, dynamic> voter) async {
+  Future<void> addVoter(User voter) async {
     try {
       await _firestore.collection(_collection).add({
-        ...voter,
+        ...voter.toMap(),
         'voteStatus': false,
         'createdAt': FieldValue.serverTimestamp(),
       });
@@ -24,10 +30,10 @@ class VoterService {
   }
 
   // Update an existing voter
-  Future<void> updateVoter(String id, Map<String, dynamic> voter) async {
+  Future<void> updateVoter(String id, User voter) async {
     try {
       await _firestore.collection(_collection).doc(id).update({
-        ...voter,
+        ...voter.toMap(),
         'updatedAt': FieldValue.serverTimestamp(),
       });
     } catch (e) {
@@ -47,12 +53,14 @@ class VoterService {
   }
 
   // Search voters with prefix pattern matching for NIC and name
-  Future<List<QueryDocumentSnapshot>> searchVoters(String query) async {
+  Future<List<User>> searchVoters(String query) async {
     try {
       if (query.isEmpty) {
-        QuerySnapshot querySnapshot =
-            await _firestore.collection(_collection).get();
-        return querySnapshot.docs;
+        QuerySnapshot querySnapshot = await _firestore.collection(_collection).get();
+        return querySnapshot.docs.map((doc) => User.fromMap({
+          'voterId': doc.id,
+          ...doc.data() as Map<String, dynamic>
+        })).toList();
       }
 
       // Convert query to lowercase for case-insensitive comparison
@@ -71,8 +79,21 @@ class VoterService {
           .where('name', isLessThan: '$lowercaseQuery\uf8ff')
           .get();
 
-      // Combine the results
-      return [...nicResults.docs, ...nameResults.docs];
+      // Combine and convert all results
+      Set<String> seenIds = {};
+      List<User> voters = [];
+
+      for (var doc in [...nicResults.docs, ...nameResults.docs]) {
+        if (!seenIds.contains(doc.id)) {
+          seenIds.add(doc.id);
+          voters.add(User.fromMap({
+            'voterId': doc.id,
+            ...doc.data() as Map<String, dynamic>
+          }));
+        }
+      }
+
+      return voters;
     } catch (e) {
       print('Error searching voters: $e');
       rethrow;

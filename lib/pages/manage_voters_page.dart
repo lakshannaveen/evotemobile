@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:evoteapp/config/theme.dart';
 import 'package:evoteapp/services/voter_service.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:evoteapp/models/user.dart';
 import 'package:evoteapp/pages/admin_dashboard_page.dart';
 
 class ManageVotersPage extends StatefulWidget {
@@ -14,7 +14,7 @@ class ManageVotersPage extends StatefulWidget {
 class ManageVotersPageState extends State<ManageVotersPage> {
   final TextEditingController _searchController = TextEditingController();
   final VoterService _voterService = VoterService();
-  List<Map<String, dynamic>> _filteredVoters = [];
+  List<User> _filteredVoters = [];
 
   @override
   void initState() {
@@ -51,17 +51,17 @@ class ManageVotersPageState extends State<ManageVotersPage> {
     );
   }
 
-  void _editVoter(QueryDocumentSnapshot voter) {
+  void _editVoter(User voter) {
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (dialogContext) => WillPopScope(
         onWillPop: () async => false,
         child: _VoterFormDialog(
-          initialValue: voter.data() as Map<String, dynamic>,
+          initialValue: voter,
           onSubmit: (updatedVoter) async {
             try {
-              await _voterService.updateVoter(voter.id, updatedVoter);
+              await _voterService.updateVoter(voter.userId, updatedVoter);
               if (mounted && dialogContext.mounted) {
                 Navigator.of(dialogContext).pop();
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -96,7 +96,6 @@ class ManageVotersPageState extends State<ManageVotersPage> {
           TextButton(
             onPressed: () async {
               try {
-                // Close the dialog first
                 Navigator.of(dialogContext).pop();
                 await _voterService.deleteVoter(id);
                 if (mounted && context.mounted) {
@@ -130,10 +129,7 @@ class ManageVotersPageState extends State<ManageVotersPage> {
       final results = await _voterService.searchVoters(query);
       if (mounted) {
         setState(() {
-          _filteredVoters = results.map((doc) => {
-            'id': doc.id,
-            ...doc.data() as Map<String, dynamic>
-          }).toList();
+          _filteredVoters = results;
         });
       }
     } catch (e) {
@@ -182,10 +178,10 @@ class ManageVotersPageState extends State<ManageVotersPage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  StreamBuilder<QuerySnapshot>(
+                  StreamBuilder<List<User>>(
                     stream: _voterService.getVoters(),
                     builder: (context, snapshot) {
-                      final voterCount = snapshot.hasData ? snapshot.data!.docs.length : 0;
+                      final voterCount = snapshot.hasData ? snapshot.data!.length : 0;
                       return Text(
                         'Voters ($voterCount)',
                         style: const TextStyle(
@@ -204,7 +200,7 @@ class ManageVotersPageState extends State<ManageVotersPage> {
               ),
               const SizedBox(height: 16),
               Expanded(
-                child: StreamBuilder<QuerySnapshot>(
+                child: StreamBuilder<List<User>>(
                   stream: _voterService.getVoters(),
                   builder: (context, snapshot) {
                     if (snapshot.hasError) {
@@ -216,7 +212,7 @@ class ManageVotersPageState extends State<ManageVotersPage> {
                     }
 
                     final voters = _searchController.text.isEmpty
-                        ? snapshot.data!.docs
+                        ? snapshot.data!
                         : _filteredVoters;
 
                     if (voters.isEmpty) {
@@ -226,54 +222,35 @@ class ManageVotersPageState extends State<ManageVotersPage> {
                     return ListView.builder(
                       itemCount: voters.length,
                       itemBuilder: (context, index) {
-                        final dynamic voter = voters[index];
-                        final Map<String, dynamic> data;
-                        final String voterId;
-
-                        if (_searchController.text.isEmpty) {
-                          final doc = voter as QueryDocumentSnapshot;
-                          data = doc.data() as Map<String, dynamic>;
-                          voterId = doc.id;
-                        } else {
-                          data = voter as Map<String, dynamic>;
-                          voterId = data['id'] as String;
-                        }
+                        final voter = voters[index];
                         
                         return Card(
                           margin: const EdgeInsets.only(bottom: 8.0),
                           child: ExpansionTile(
-                            title: Text(data['name'] ?? 'N/A'),
-                            subtitle: Text('NIC: ${data['nic'] ?? 'N/A'}'),
+                            title: Text(voter.fullName),
+                            subtitle: Text('NIC: ${voter.nic}'),
                             children: [
                               Padding(
                                 padding: const EdgeInsets.all(16.0),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text('Address: ${data['address'] ?? 'N/A'}'),
-                                    Text('Voter ID: ${data['voterId'] ?? 'N/A'}'),
-                                    Text('District: ${data['district'] ?? 'N/A'}'),
-                                    Text('Polling Division: ${data['pollingDivision'] ?? 'N/A'}'),
-                                    Text('Vote Status: ${data['voteStatus'] == true ? 'Voted' : 'Not Voted'}'),
+                                    Text('Address: ${voter.address}'),
+                                    Text('Voter ID: ${voter.userId}'),
+                                    Text('District: ${voter.district}'),
+                                    Text('Polling Division: ${voter.pollingDivision}'),
+                                    Text('Vote Status: ${voter.voteStatus ? 'Voted' : 'Not Voted'}'),
                                     const SizedBox(height: 8),
                                     Row(
                                       mainAxisAlignment: MainAxisAlignment.end,
                                       children: [
                                         IconButton(
                                           icon: const Icon(Icons.edit),
-                                          onPressed: () {
-                                            if (_searchController.text.isEmpty) {
-                                              _editVoter(voter as QueryDocumentSnapshot);
-                                            } else {
-                                              final originalDoc = snapshot.data!.docs
-                                                  .firstWhere((doc) => doc.id == voterId);
-                                              _editVoter(originalDoc);
-                                            }
-                                          },
+                                          onPressed: () => _editVoter(voter),
                                         ),
                                         IconButton(
                                           icon: const Icon(Icons.delete, color: Colors.red),
-                                          onPressed: () => _deleteVoter(voterId),
+                                          onPressed: () => _deleteVoter(voter.userId),
                                         ),
                                       ],
                                     ),
@@ -297,8 +274,8 @@ class ManageVotersPageState extends State<ManageVotersPage> {
 }
 
 class _VoterFormDialog extends StatefulWidget {
-  final Map<String, dynamic>? initialValue;
-  final Function(Map<String, dynamic>) onSubmit;
+  final User? initialValue;
+  final Function(User) onSubmit;
 
   const _VoterFormDialog({
     this.initialValue,
@@ -321,12 +298,12 @@ class _VoterFormDialogState extends State<_VoterFormDialog> {
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: widget.initialValue?['name'] ?? '');
-    _addressController = TextEditingController(text: widget.initialValue?['address'] ?? '');
-    _nicController = TextEditingController(text: widget.initialValue?['nic'] ?? '');
-    _voterIdController = TextEditingController(text: widget.initialValue?['voterId'] ?? '');
-    _districtController = TextEditingController(text: widget.initialValue?['district'] ?? '');
-    _pollingDivisionController = TextEditingController(text: widget.initialValue?['pollingDivision'] ?? '');
+    _nameController = TextEditingController(text: widget.initialValue?.fullName ?? '');
+    _addressController = TextEditingController(text: widget.initialValue?.address ?? '');
+    _nicController = TextEditingController(text: widget.initialValue?.nic ?? '');
+    _voterIdController = TextEditingController(text: widget.initialValue?.userId ?? '');
+    _districtController = TextEditingController(text: widget.initialValue?.district ?? '');
+    _pollingDivisionController = TextEditingController(text: widget.initialValue?.pollingDivision ?? '');
   }
 
   @override
@@ -535,14 +512,17 @@ class _VoterFormDialogState extends State<_VoterFormDialog> {
                   ElevatedButton(
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
-                        widget.onSubmit({
-                          'name': _nameController.text.toLowerCase(),
-                          'address': _addressController.text,
-                          'nic': _nicController.text.toLowerCase(),
-                          'voterId': _voterIdController.text,
-                          'district': _districtController.text,
-                          'pollingDivision': _pollingDivisionController.text,
-                        });
+                        widget.onSubmit(
+                          User(
+                            userId: _voterIdController.text,
+                            fullName: _nameController.text,
+                            address: _addressController.text,
+                            nic: _nicController.text.toLowerCase(),
+                            voteStatus: widget.initialValue?.voteStatus ?? false,
+                            district: _districtController.text,
+                            pollingDivision: _pollingDivisionController.text,
+                          ),
+                        );
                       }
                     },
                     style: ElevatedButton.styleFrom(
