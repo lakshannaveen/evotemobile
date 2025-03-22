@@ -79,25 +79,26 @@ class _CastPageState extends State<CastPage> {
                   );
 
                   if (result == 'Vote submitted successfully') {
-                    // Show success message immediately
+                    // Show success message with candidate details for 5 seconds
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(
+                          'Vote submitted successfully!\n\n'
                           'You voted for:\n'
                           'Sinhala: ${selectedCandidate.nameSinhala}\n'
                           'English: ${selectedCandidate.nameEnglish}\n'
                           'Tamil: ${selectedCandidate.nameTamil}',
                           textAlign: TextAlign.center,
                         ),
-                        duration: const Duration(seconds: 3),
+                        duration: const Duration(seconds: 5),
                       ),
                     );
 
-                    // Wait for 3 seconds then navigate to home page
-                    await Future.delayed(const Duration(seconds: 3));
+                    // Wait for 5 seconds, then navigate to home
+                    await Future.delayed(const Duration(seconds: 5));
                     Navigator.pushReplacementNamed(context, '/');
                   } else {
-                    // Show error message if vote submission failed
+                    // Show error message if vote submission fails
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text(result!)),
                     );
