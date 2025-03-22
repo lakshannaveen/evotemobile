@@ -29,93 +29,107 @@ class _CastPageState extends State<CastPage> {
     voterId = args['voterId'];
   }
 
+  Future<bool> _onWillPop() async {
+    Navigator.pushReplacementNamed(
+        context, '/'); // Navigate to home on back press
+    return false; // Prevent the default back behavior
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Cast Your Vote')),
-      body: Column(
-        children: [
-          const Padding(
-            padding: EdgeInsets.all(16.0),
-            child: Text(
-              'Select a Candidate',
-              style: TextStyle(fontSize: 24),
-            ),
+    return WillPopScope(
+      onWillPop: _onWillPop,
+      child: Scaffold(
+        appBar: AppBar(
+          automaticallyImplyLeading: false, // Removes the default back icon
+          title: const Center(
+            child: Text('Cast Your Vote'),
           ),
-          Expanded(
-            child: StreamBuilder<List<Candidate>>(
-              stream: _candidateService.getCandidates(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                if (snapshot.hasError) {
-                  return Center(child: Text('Error: ${snapshot.error}'));
-                }
-
-                final candidates = snapshot.data ?? [];
-                if (candidates.isEmpty) {
-                  return const Center(child: Text('No candidates available'));
-                }
-
-                return _buildCandidateList(candidates);
-              },
+        ),
+        body: Column(
+          children: [
+            const Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Center(
+                child: Text(
+                  'Select a Candidate',
+                  style: TextStyle(fontSize: 24),
+                ),
+              ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: ElevatedButton(
-              onPressed: () async {
-                if (_selectedCandidate.value != null) {
-                  final candidates =
-                      await _candidateService.getCandidates().first;
-                  final selectedCandidate = candidates
-                      .firstWhere((c) => c.id == _selectedCandidate.value);
+            Expanded(
+              child: StreamBuilder<List<Candidate>>(
+                stream: _candidateService.getCandidates(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (snapshot.hasError) {
+                    return Center(child: Text('Error: ${snapshot.error}'));
+                  }
 
-                  final result = await _voteService.submitVote(
-                    nic,
-                    voterId,
-                    _selectedCandidate.value!,
-                  );
+                  final candidates = snapshot.data ?? [];
+                  if (candidates.isEmpty) {
+                    return const Center(child: Text('No candidates available'));
+                  }
 
-                  if (result == 'Vote submitted successfully') {
-                    // Show success message with candidate details for 5 seconds
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          'Vote submitted successfully!\n\n'
-                          'You voted for:\n'
-                          'Sinhala: ${selectedCandidate.nameSinhala}\n'
-                          'English: ${selectedCandidate.nameEnglish}\n'
-                          'Tamil: ${selectedCandidate.nameTamil}',
-                          textAlign: TextAlign.center,
+                  return _buildCandidateList(candidates);
+                },
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: ElevatedButton(
+                onPressed: () async {
+                  if (_selectedCandidate.value != null) {
+                    final candidates =
+                        await _candidateService.getCandidates().first;
+                    final selectedCandidate = candidates.firstWhere(
+                      (c) => c.id == _selectedCandidate.value,
+                    );
+
+                    final result = await _voteService.submitVote(
+                      nic,
+                      voterId,
+                      _selectedCandidate.value!,
+                    );
+
+                    if (result == 'Vote submitted successfully') {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Vote submitted successfully!\n\n'
+                            'You voted for:\n'
+                            'Sinhala: ${selectedCandidate.nameSinhala}\n'
+                            'English: ${selectedCandidate.nameEnglish}\n'
+                            'Tamil: ${selectedCandidate.nameTamil}',
+                            textAlign: TextAlign.center,
+                          ),
+                          duration: const Duration(seconds: 5),
                         ),
-                        duration: const Duration(seconds: 5),
+                      );
+
+                      await Future.delayed(const Duration(seconds: 5));
+                      Navigator.pushReplacementNamed(context, '/');
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(result!)),
+                      );
+                    }
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                            'Please select a candidate before submitting.'),
                       ),
                     );
-
-                    // Wait for 5 seconds, then navigate to home
-                    await Future.delayed(const Duration(seconds: 5));
-                    Navigator.pushReplacementNamed(context, '/');
-                  } else {
-                    // Show error message if vote submission fails
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(result!)),
-                    );
                   }
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content:
-                          Text('Please select a candidate before submitting.'),
-                    ),
-                  );
-                }
-              },
-              child: const Text('Submit Vote'),
+                },
+                child: const Text('Submit Vote'),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
