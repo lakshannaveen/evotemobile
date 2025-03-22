@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'dart:typed_data';
 import '../services/candidate_service.dart';
+import '../models/candidate.dart';
+import 'dart:typed_data';
 
 class CastPage extends StatefulWidget {
   const CastPage({super.key});
@@ -31,7 +31,7 @@ class _CastPageState extends State<CastPage> {
             ),
           ),
           Expanded(
-            child: StreamBuilder<QuerySnapshot>(
+            child: StreamBuilder<List<Candidate>>(
               stream: _candidateService.getCandidates(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
@@ -42,7 +42,7 @@ class _CastPageState extends State<CastPage> {
                   return Center(child: Text('Error: ${snapshot.error}'));
                 }
 
-                final candidates = snapshot.data?.docs ?? [];
+                final candidates = snapshot.data ?? [];
 
                 if (candidates.isEmpty) {
                   return const Center(child: Text('No candidates available'));
@@ -60,14 +60,16 @@ class _CastPageState extends State<CastPage> {
                   // Submit vote logic here
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                        content: Text(
-                            'Vote submitted for candidate ID: ${_selectedCandidate.value}')),
+                      content: Text(
+                          'Vote submitted for candidate ID: ${_selectedCandidate.value}'),
+                    ),
                   );
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                        content: Text(
-                            'Please select a candidate before submitting.')),
+                      content:
+                          Text('Please select a candidate before submitting.'),
+                    ),
                   );
                 }
               },
@@ -79,17 +81,16 @@ class _CastPageState extends State<CastPage> {
     );
   }
 
-  Widget _buildCandidateList(List<QueryDocumentSnapshot> candidates) {
+  Widget _buildCandidateList(List<Candidate> candidates) {
     return ListView.builder(
       itemCount: candidates.length,
       itemBuilder: (context, index) {
-        final candidate = candidates[index].data() as Map<String, dynamic>;
+        final candidate = candidates[index];
 
         Uint8List? imageBytes;
-        if (candidate['partyLogo'] != null) {
+        if (candidate.partyLogo.isNotEmpty) {
           try {
-            imageBytes =
-                Uri.parse(candidate['partyLogo']).data?.contentAsBytes();
+            imageBytes = Uri.parse(candidate.partyLogo).data?.contentAsBytes();
           } catch (e) {
             debugPrint('Error parsing image: $e');
           }
@@ -114,39 +115,28 @@ class _CastPageState extends State<CastPage> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // Party Logo on the left
                 if (imageBytes != null)
                   Image.memory(imageBytes,
                       width: 50, height: 50, fit: BoxFit.contain),
-
                 const SizedBox(width: 16),
-
-                // Candidate Names (Centered)
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Text(candidate['nameSinhala'] ?? 'N/A',
-                          textAlign: TextAlign.center),
-                      Text(candidate['nameEnglish'] ?? 'N/A',
-                          textAlign: TextAlign.center),
-                      Text(candidate['nameTamil'] ?? 'N/A',
-                          textAlign: TextAlign.center),
+                      Text(candidate.nameSinhala, textAlign: TextAlign.center),
+                      Text(candidate.nameEnglish, textAlign: TextAlign.center),
+                      Text(candidate.nameTamil, textAlign: TextAlign.center),
                     ],
                   ),
                 ),
-
-                // Radio Button on the right
                 ValueListenableBuilder<String?>(
                   valueListenable: _selectedCandidate,
                   builder: (context, selected, child) {
                     return Radio<String>(
-                      value: candidates[index].id,
+                      value: candidate.id!,
                       groupValue: selected,
                       onChanged: (value) {
-                        if (value != null) {
-                          _selectedCandidate.value = value;
-                        }
+                        _selectedCandidate.value = value;
                       },
                     );
                   },
