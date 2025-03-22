@@ -23,6 +23,19 @@ class VoteSubmissionService {
       final vote = Vote(nic: nic, voterId: userId, candidateId: candidateId);
       await _firestore.collection(_collection).add(vote.toJson());
 
+      // Update the user's voteStatus to true after successful vote submission
+      QuerySnapshot userSnapshot = await _firestore
+          .collection('voters')
+          .where('voterId', isEqualTo: userId)
+          .get();
+
+      if (userSnapshot.docs.isNotEmpty) {
+        await _firestore
+            .collection('voters')
+            .doc(userSnapshot.docs.first.id)
+            .update({'voteStatus': true});
+      }
+
       return 'Vote submitted successfully'; // Return success message
     } catch (e) {
       print('Error submitting vote: $e');
