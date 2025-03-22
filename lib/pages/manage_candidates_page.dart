@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:evoteapp/config/theme.dart';
 import 'package:evoteapp/services/candidate_service.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:evoteapp/models/candidate.dart';
 import 'package:evoteapp/pages/admin_dashboard_page.dart';
 import 'package:file_picker/file_picker.dart';
 
@@ -15,7 +15,7 @@ class ManageCandidatesPage extends StatefulWidget {
 class ManageCandidatesPageState extends State<ManageCandidatesPage> {
   final TextEditingController _searchController = TextEditingController();
   final CandidateService _candidateService = CandidateService();
-  List<Map<String, dynamic>> _filteredCandidates = [];
+  List<Candidate> _filteredCandidates = [];
 
   @override
   void initState() {
@@ -52,17 +52,17 @@ class ManageCandidatesPageState extends State<ManageCandidatesPage> {
     );
   }
 
-  void _editCandidate(QueryDocumentSnapshot candidate) {
+  void _editCandidate(Candidate candidate) {
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (dialogContext) => WillPopScope(
         onWillPop: () async => false,
         child: _CandidateFormDialog(
-          initialValue: candidate.data() as Map<String, dynamic>,
+          initialValue: candidate,
           onSubmit: (updatedCandidate) async {
             try {
-              await _candidateService.updateCandidate(candidate.id, updatedCandidate);
+              await _candidateService.updateCandidate(candidate.id!, updatedCandidate);
               if (mounted && dialogContext.mounted) {
                 Navigator.of(dialogContext).pop();
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -130,10 +130,7 @@ class ManageCandidatesPageState extends State<ManageCandidatesPage> {
       final results = await _candidateService.searchCandidates(query);
       if (mounted) {
         setState(() {
-          _filteredCandidates = results.map((doc) => {
-            'id': doc.id,
-            ...doc.data() as Map<String, dynamic>
-          }).toList();
+          _filteredCandidates = results;
         });
       }
     } catch (e) {
@@ -182,10 +179,10 @@ class ManageCandidatesPageState extends State<ManageCandidatesPage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  StreamBuilder<QuerySnapshot>(
+                  StreamBuilder<List<Candidate>>(
                     stream: _candidateService.getCandidates(),
                     builder: (context, snapshot) {
-                      final candidateCount = snapshot.hasData ? snapshot.data!.docs.length : 0;
+                      final candidateCount = snapshot.hasData ? snapshot.data!.length : 0;
                       return Text(
                         'Candidates ($candidateCount)',
                         style: const TextStyle(
@@ -204,7 +201,7 @@ class ManageCandidatesPageState extends State<ManageCandidatesPage> {
               ),
               const SizedBox(height: 16),
               Expanded(
-                child: StreamBuilder<QuerySnapshot>(
+                child: StreamBuilder<List<Candidate>>(
                   stream: _candidateService.getCandidates(),
                   builder: (context, snapshot) {
                     if (snapshot.hasError) {
@@ -216,7 +213,7 @@ class ManageCandidatesPageState extends State<ManageCandidatesPage> {
                     }
 
                     final candidates = _searchController.text.isEmpty
-                        ? snapshot.data!.docs
+                        ? snapshot.data!
                         : _filteredCandidates;
 
                     if (candidates.isEmpty) {
@@ -226,62 +223,43 @@ class ManageCandidatesPageState extends State<ManageCandidatesPage> {
                     return ListView.builder(
                       itemCount: candidates.length,
                       itemBuilder: (context, index) {
-                        final dynamic candidate = candidates[index];
-                        final Map<String, dynamic> data;
-                        final String candidateId;
-
-                        if (_searchController.text.isEmpty) {
-                          final doc = candidate as QueryDocumentSnapshot;
-                          data = doc.data() as Map<String, dynamic>;
-                          candidateId = doc.id;
-                        } else {
-                          data = candidate as Map<String, dynamic>;
-                          candidateId = data['id'] as String;
-                        }
+                        final candidate = candidates[index];
                         
                         return Card(
                           margin: const EdgeInsets.only(bottom: 8.0),
                           child: ExpansionTile(
-                            leading: data['partyLogo'] != null
+                            leading: candidate.partyLogo.isNotEmpty
                                 ? SizedBox(
                                     width: 40,
                                     height: 40,
                                     child: Image.memory(
-                                      Uri.parse(data['partyLogo']).data!.contentAsBytes(),
+                                      Uri.parse(candidate.partyLogo).data!.contentAsBytes(),
                                       fit: BoxFit.contain,
                                     ),
                                   )
                                 : const Icon(Icons.person),
-                            title: Text(data['nameEnglish'] ?? 'N/A'),
-                            subtitle: Text(data['nameSinhala'] ?? 'N/A'),
+                            title: Text(candidate.nameEnglish),
+                            subtitle: Text(candidate.nameSinhala),
                             children: [
                               Padding(
                                 padding: const EdgeInsets.all(16.0),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text('Name (English): ${data['nameEnglish'] ?? 'N/A'}'),
-                                    Text('Name (Sinhala): ${data['nameSinhala'] ?? 'N/A'}'),
-                                    Text('Name (Tamil): ${data['nameTamil'] ?? 'N/A'}'),
+                                    Text('Name (English): ${candidate.nameEnglish}'),
+                                    Text('Name (Sinhala): ${candidate.nameSinhala}'),
+                                    Text('Name (Tamil): ${candidate.nameTamil}'),
                                     const SizedBox(height: 8),
                                     Row(
                                       mainAxisAlignment: MainAxisAlignment.end,
                                       children: [
                                         IconButton(
                                           icon: const Icon(Icons.edit),
-                                          onPressed: () {
-                                            if (_searchController.text.isEmpty) {
-                                              _editCandidate(candidate as QueryDocumentSnapshot);
-                                            } else {
-                                              final originalDoc = snapshot.data!.docs
-                                                  .firstWhere((doc) => doc.id == candidateId);
-                                              _editCandidate(originalDoc);
-                                            }
-                                          },
+                                          onPressed: () => _editCandidate(candidate),
                                         ),
                                         IconButton(
                                           icon: const Icon(Icons.delete, color: Colors.red),
-                                          onPressed: () => _deleteCandidate(candidateId),
+                                          onPressed: () => _deleteCandidate(candidate.id!),
                                         ),
                                       ],
                                     ),
@@ -305,8 +283,8 @@ class ManageCandidatesPageState extends State<ManageCandidatesPage> {
 }
 
 class _CandidateFormDialog extends StatefulWidget {
-  final Map<String, dynamic>? initialValue;
-  final Function(Map<String, dynamic>) onSubmit;
+  final Candidate? initialValue;
+  final Function(Candidate) onSubmit;
 
   const _CandidateFormDialog({
     this.initialValue,
@@ -327,10 +305,10 @@ class _CandidateFormDialogState extends State<_CandidateFormDialog> {
   @override
   void initState() {
     super.initState();
-    _nameEnglishController = TextEditingController(text: widget.initialValue?['nameEnglish'] ?? '');
-    _nameSinhalaController = TextEditingController(text: widget.initialValue?['nameSinhala'] ?? '');
-    _nameTamilController = TextEditingController(text: widget.initialValue?['nameTamil'] ?? '');
-    _partyLogo = widget.initialValue?['partyLogo'];
+    _nameEnglishController = TextEditingController(text: widget.initialValue?.nameEnglish ?? '');
+    _nameSinhalaController = TextEditingController(text: widget.initialValue?.nameSinhala ?? '');
+    _nameTamilController = TextEditingController(text: widget.initialValue?.nameTamil ?? '');
+    _partyLogo = widget.initialValue?.partyLogo;
   }
 
   @override
@@ -346,7 +324,7 @@ class _CandidateFormDialogState extends State<_CandidateFormDialog> {
       FilePickerResult? result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['png', 'jpg', 'jpeg', 'svg', 'webp', 'gif'],
-        withData: true, // Ensure we get the file bytes
+        withData: true,
       );
 
       if (result != null && result.files.first.bytes != null) {
@@ -553,12 +531,14 @@ class _CandidateFormDialogState extends State<_CandidateFormDialog> {
                           );
                           return;
                         }
-                        widget.onSubmit({
-                          'nameEnglish': _nameEnglishController.text.toLowerCase(),
-                          'nameSinhala': _nameSinhalaController.text,
-                          'nameTamil': _nameTamilController.text,
-                          'partyLogo': _partyLogo,
-                        });
+                        widget.onSubmit(
+                          Candidate(
+                            nameEnglish: _nameEnglishController.text,
+                            nameSinhala: _nameSinhalaController.text,
+                            nameTamil: _nameTamilController.text,
+                            partyLogo: _partyLogo!,
+                          ),
+                        );
                       }
                     },
                     style: ElevatedButton.styleFrom(

@@ -1,19 +1,22 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:evoteapp/models/candidate.dart';
 
 class CandidateService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final String _collection = 'candidates';
 
   // Get all candidates
-  Stream<QuerySnapshot> getCandidates() {
-    return _firestore.collection(_collection).snapshots();
+  Stream<List<Candidate>> getCandidates() {
+    return _firestore.collection(_collection).snapshots().map(
+      (snapshot) => snapshot.docs.map((doc) => Candidate.fromFirestore(doc)).toList()
+    );
   }
 
   // Add a new candidate
-  Future<void> addCandidate(Map<String, dynamic> candidate) async {
+  Future<void> addCandidate(Candidate candidate) async {
     try {
       await _firestore.collection(_collection).add({
-        ...candidate,
+        ...candidate.toMap(),
         'createdAt': FieldValue.serverTimestamp(),
       });
     } catch (e) {
@@ -23,11 +26,10 @@ class CandidateService {
   }
 
   // Update an existing candidate
-  Future<void> updateCandidate(
-      String id, Map<String, dynamic> candidate) async {
+  Future<void> updateCandidate(String id, Candidate candidate) async {
     try {
       await _firestore.collection(_collection).doc(id).update({
-        ...candidate,
+        ...candidate.toMap(),
         'updatedAt': FieldValue.serverTimestamp(),
       });
     } catch (e) {
@@ -47,12 +49,11 @@ class CandidateService {
   }
 
   // Search candidates by name (in any language)
-  Future<List<QueryDocumentSnapshot>> searchCandidates(String query) async {
+  Future<List<Candidate>> searchCandidates(String query) async {
     try {
       if (query.isEmpty) {
-        QuerySnapshot querySnapshot =
-            await _firestore.collection(_collection).get();
-        return querySnapshot.docs;
+        QuerySnapshot querySnapshot = await _firestore.collection(_collection).get();
+        return querySnapshot.docs.map((doc) => Candidate.fromFirestore(doc)).toList();
       }
 
       final lowercaseQuery = query.toLowerCase();
@@ -76,12 +77,18 @@ class CandidateService {
           .where('nameTamil', isLessThan: '$lowercaseQuery\uf8ff')
           .get();
 
-      // Combine all results
-      return [
-        ...sinhalaResults.docs,
-        ...englishResults.docs,
-        ...tamilResults.docs
-      ];
+      // Combine and convert all results
+      Set<String> seenIds = {};
+      List<Candidate> candidates = [];
+
+      for (var doc in [...sinhalaResults.docs, ...englishResults.docs, ...tamilResults.docs]) {
+        if (!seenIds.contains(doc.id)) {
+          seenIds.add(doc.id);
+          candidates.add(Candidate.fromFirestore(doc));
+        }
+      }
+
+      return candidates;
     } catch (e) {
       print('Error searching candidates: $e');
       rethrow;
