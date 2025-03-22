@@ -8,25 +8,25 @@ class VoteSubmissionService {
   Future<String?> submitVote(
       String nic, String userId, String candidateId) async {
     try {
-      // Check if the user has already voted
+      // Check if a vote already exists with the same voterId and nic
       QuerySnapshot querySnapshot = await _firestore
           .collection(_collection)
-          .where('userId', isEqualTo: userId)
+          .where('voterId', isEqualTo: userId)
+          .where('nic', isEqualTo: nic)
           .get();
 
       if (querySnapshot.docs.isNotEmpty) {
-        return 'You have already voted'; // Custom error message
+        return 'You have already voted'; // Return error if vote exists
       }
 
       // Save the vote
       final vote = Vote(nic: nic, voterId: userId, candidateId: candidateId);
-
       await _firestore.collection(_collection).add(vote.toJson());
 
       return 'Vote submitted successfully'; // Return success message
     } catch (e) {
       print('Error submitting vote: $e');
-      return 'An error occurred. Please try again.'; // Custom error message
+      return 'An error occurred. Please try again.'; // Handle errors gracefully
     }
   }
 }
