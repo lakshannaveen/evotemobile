@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/candidate_service.dart';
+import '../services/vote_submission_service.dart';
 import '../models/candidate.dart';
 import 'dart:typed_data';
 
@@ -12,10 +13,21 @@ class CastPage extends StatefulWidget {
 
 class _CastPageState extends State<CastPage> {
   final CandidateService _candidateService = CandidateService();
+  final VoteSubmissionService _voteService = VoteSubmissionService();
 
-  /// Use ValueNotifier instead of setState
   final ValueNotifier<String?> _selectedCandidate =
       ValueNotifier<String?>(null);
+  late String nic;
+  late String voterId;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final args =
+        ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+    nic = args['nic'];
+    voterId = args['voterId'];
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,13 +49,11 @@ class _CastPageState extends State<CastPage> {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
                 }
-
                 if (snapshot.hasError) {
                   return Center(child: Text('Error: ${snapshot.error}'));
                 }
 
                 final candidates = snapshot.data ?? [];
-
                 if (candidates.isEmpty) {
                   return const Center(child: Text('No candidates available'));
                 }
@@ -55,15 +65,21 @@ class _CastPageState extends State<CastPage> {
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 if (_selectedCandidate.value != null) {
-                  // Submit vote logic here
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                          'Vote submitted for candidate ID: ${_selectedCandidate.value}'),
-                    ),
+                  final result = await _voteService.submitVote(
+                    nic,
+                    voterId,
+                    _selectedCandidate.value!,
                   );
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(result!)),
+                  );
+
+                  if (result == 'Vote submitted successfully') {
+                    // Optionally, navigate or update UI if needed
+                  }
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
@@ -73,7 +89,7 @@ class _CastPageState extends State<CastPage> {
                   );
                 }
               },
-              child: const Text('Submit'),
+              child: const Text('Submit Vote'),
             ),
           ),
         ],
@@ -86,8 +102,8 @@ class _CastPageState extends State<CastPage> {
       itemCount: candidates.length,
       itemBuilder: (context, index) {
         final candidate = candidates[index];
-
         Uint8List? imageBytes;
+
         if (candidate.partyLogo.isNotEmpty) {
           try {
             imageBytes = Uri.parse(candidate.partyLogo).data?.contentAsBytes();
@@ -113,7 +129,6 @@ class _CastPageState extends State<CastPage> {
             ),
             padding: const EdgeInsets.all(16.0),
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 if (imageBytes != null)
                   Image.memory(imageBytes,
@@ -131,7 +146,7 @@ class _CastPageState extends State<CastPage> {
                 ),
                 ValueListenableBuilder<String?>(
                   valueListenable: _selectedCandidate,
-                  builder: (context, selected, child) {
+                  builder: (context, selected, _) {
                     return Radio<String>(
                       value: candidate.id!,
                       groupValue: selected,

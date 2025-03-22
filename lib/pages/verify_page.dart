@@ -153,7 +153,14 @@ class VerifyPage extends StatelessWidget {
               // Button to go to Vote
               ElevatedButton(
                 onPressed: () {
-                  Navigator.pushNamed(context, '/cast');
+                  Navigator.pushNamed(
+                    context,
+                    '/cast',
+                    arguments: {
+                      'nic': user['nic'],
+                      'voterId': user['voterId'],
+                    },
+                  );
                 },
                 child: const Text('Go to Vote'),
               ),
