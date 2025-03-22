@@ -67,19 +67,40 @@ class _CastPageState extends State<CastPage> {
             child: ElevatedButton(
               onPressed: () async {
                 if (_selectedCandidate.value != null) {
+                  final candidates =
+                      await _candidateService.getCandidates().first;
+                  final selectedCandidate = candidates
+                      .firstWhere((c) => c.id == _selectedCandidate.value);
+
                   final result = await _voteService.submitVote(
                     nic,
                     voterId,
                     _selectedCandidate.value!,
                   );
 
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(result!)),
-                  );
-
                   if (result == 'Vote submitted successfully') {
-                    // Navigate to the homepage after vote submission
+                    // Show success message immediately
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'You voted for:\n'
+                          'Sinhala: ${selectedCandidate.nameSinhala}\n'
+                          'English: ${selectedCandidate.nameEnglish}\n'
+                          'Tamil: ${selectedCandidate.nameTamil}',
+                          textAlign: TextAlign.center,
+                        ),
+                        duration: const Duration(seconds: 3),
+                      ),
+                    );
+
+                    // Wait for 3 seconds then navigate to home page
+                    await Future.delayed(const Duration(seconds: 3));
                     Navigator.pushReplacementNamed(context, '/');
+                  } else {
+                    // Show error message if vote submission failed
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(result!)),
+                    );
                   }
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -132,8 +153,12 @@ class _CastPageState extends State<CastPage> {
             child: Row(
               children: [
                 if (imageBytes != null)
-                  Image.memory(imageBytes,
-                      width: 50, height: 50, fit: BoxFit.contain),
+                  Image.memory(
+                    imageBytes,
+                    width: 50,
+                    height: 50,
+                    fit: BoxFit.contain,
+                  ),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Column(
