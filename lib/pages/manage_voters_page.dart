@@ -61,7 +61,8 @@ class ManageVotersPageState extends State<ManageVotersPage> {
           initialValue: voter,
           onSubmit: (updatedVoter) async {
             try {
-              await _voterService.updateVoter(voter.userId, updatedVoter);
+              // Use doc id for Firestore operations
+              await _voterService.updateVoter(voter.id, updatedVoter);
               if (mounted && dialogContext.mounted) {
                 Navigator.of(dialogContext).pop();
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -82,7 +83,7 @@ class ManageVotersPageState extends State<ManageVotersPage> {
     );
   }
 
-  void _deleteVoter(String id) {
+  void _deleteVoter(String docId) {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -97,7 +98,8 @@ class ManageVotersPageState extends State<ManageVotersPage> {
             onPressed: () async {
               try {
                 Navigator.of(dialogContext).pop();
-                await _voterService.deleteVoter(id);
+                // Use doc id for deletion
+                await _voterService.deleteVoter(docId);
                 if (mounted && context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Voter deleted successfully')),
@@ -250,7 +252,7 @@ class ManageVotersPageState extends State<ManageVotersPage> {
                                         ),
                                         IconButton(
                                           icon: const Icon(Icons.delete, color: Colors.red),
-                                          onPressed: () => _deleteVoter(voter.userId),
+                                          onPressed: () => _deleteVoter(voter.id),
                                         ),
                                       ],
                                     ),
@@ -514,7 +516,8 @@ class _VoterFormDialogState extends State<_VoterFormDialog> {
                       if (_formKey.currentState!.validate()) {
                         widget.onSubmit(
                           User(
-                            userId: _voterIdController.text,
+                            id: widget.initialValue?.id ?? '', // Pass through doc ID if editing
+                            userId: _voterIdController.text, // Use entered voter ID
                             fullName: _nameController.text,
                             address: _addressController.text,
                             nic: _nicController.text.toLowerCase(),

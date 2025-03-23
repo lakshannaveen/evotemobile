@@ -17,9 +17,9 @@ class LoginService {
           .get();
 
       if (querySnapshot.docs.isNotEmpty) {
-        final documentData =
-            querySnapshot.docs.first.data() as Map<String, dynamic>;
-        final user = User.fromMap(documentData);
+        final doc = querySnapshot.docs.first;
+        final documentData = doc.data() as Map<String, dynamic>;
+        final user = User.fromMap(documentData, doc.id);
 
         // Check if the user has already voted
         if (user.voteStatus == true) {

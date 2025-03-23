@@ -8,10 +8,10 @@ class VoterService {
   // Get all voters
   Stream<List<User>> getVoters() {
     return _firestore.collection(_collection).snapshots().map(
-      (snapshot) => snapshot.docs.map((doc) => User.fromMap({
-        'voterId': doc.id,
-        ...doc.data() as Map<String, dynamic>
-      })).toList()
+      (snapshot) => snapshot.docs.map((doc) => User.fromMap(
+        doc.data() as Map<String, dynamic>,
+        doc.id
+      )).toList()
     );
   }
 
@@ -30,9 +30,9 @@ class VoterService {
   }
 
   // Update an existing voter
-  Future<void> updateVoter(String id, User voter) async {
+  Future<void> updateVoter(String docId, User voter) async {
     try {
-      await _firestore.collection(_collection).doc(id).update({
+      await _firestore.collection(_collection).doc(docId).update({
         ...voter.toMap(),
         'updatedAt': FieldValue.serverTimestamp(),
       });
@@ -43,9 +43,9 @@ class VoterService {
   }
 
   // Delete a voter
-  Future<void> deleteVoter(String id) async {
+  Future<void> deleteVoter(String docId) async {
     try {
-      await _firestore.collection(_collection).doc(id).delete();
+      await _firestore.collection(_collection).doc(docId).delete();
     } catch (e) {
       print('Error deleting voter: $e');
       rethrow;
@@ -57,10 +57,10 @@ class VoterService {
     try {
       if (query.isEmpty) {
         QuerySnapshot querySnapshot = await _firestore.collection(_collection).get();
-        return querySnapshot.docs.map((doc) => User.fromMap({
-          'voterId': doc.id,
-          ...doc.data() as Map<String, dynamic>
-        })).toList();
+        return querySnapshot.docs.map((doc) => User.fromMap(
+          doc.data() as Map<String, dynamic>,
+          doc.id
+        )).toList();
       }
 
       // Convert query to lowercase for case-insensitive comparison
@@ -86,10 +86,10 @@ class VoterService {
       for (var doc in [...nicResults.docs, ...nameResults.docs]) {
         if (!seenIds.contains(doc.id)) {
           seenIds.add(doc.id);
-          voters.add(User.fromMap({
-            'voterId': doc.id,
-            ...doc.data() as Map<String, dynamic>
-          }));
+          voters.add(User.fromMap(
+            doc.data() as Map<String, dynamic>,
+            doc.id
+          ));
         }
       }
 
