@@ -189,6 +189,12 @@ class _ContactUsPageState extends State<ContactUsPage> {
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                 ),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please enter your message';
+                                  }
+                                  return null;
+                                },
                               ),
                               const SizedBox(height: 20),
                               SizedBox(
@@ -196,7 +202,7 @@ class _ContactUsPageState extends State<ContactUsPage> {
                                 child: ElevatedButton(
                                   style: Theme.of(context)
                                       .elevatedButtonTheme
-                                      .style, // Apply theme style
+                                      .style,
                                   onPressed: _submitForm,
                                   child: const Text('Submit'),
                                 ),
