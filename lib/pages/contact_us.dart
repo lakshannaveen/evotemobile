@@ -64,129 +64,152 @@ class _ContactUsPageState extends State<ContactUsPage> {
 
   @override
   Widget build(BuildContext context) {
-    const String phoneNumber =
-        '+94 123 456 789'; // Replace with any contact number
-    const String email =
-        'EvoteContact@gmail.com'; // Replace with any contact email
+    const String phoneNumber = '+94 123 456 789';
+    const String email = 'EvoteContact@gmail.com';
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Contact Us'),
         centerTitle: true,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(16.0),
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.blue, width: 2),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Column(
-                  children: [
-                    const Text(
-                      'If you have any questions, please call the following number or send us an email:',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    GestureDetector(
-                      onTap: () => _launchPhone(phoneNumber),
-                      child: const Text(
-                        phoneNumber,
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.blue,
-                          decoration: TextDecoration.underline,
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Card(
+                  elevation: 5,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        const Text(
+                          'Have Questions? Contact Us!',
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,
                         ),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    GestureDetector(
-                      onTap: () => _launchEmail(email),
-                      child: const Text(
-                        email,
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.blue,
-                          decoration: TextDecoration.underline,
+                        const SizedBox(height: 16),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.phone, color: Colors.blue),
+                            const SizedBox(width: 8),
+                            GestureDetector(
+                              onTap: () => _launchPhone(phoneNumber),
+                              child: Text(
+                                phoneNumber,
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.blue,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
+                        const SizedBox(height: 10),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.email, color: Colors.blue),
+                            const SizedBox(width: 8),
+                            GestureDetector(
+                              onTap: () => _launchEmail(email),
+                              child: Text(
+                                email,
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.blue,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+                        Form(
+                          key: _formKey,
+                          child: Column(
+                            children: [
+                              TextFormField(
+                                controller: _nicController,
+                                decoration: InputDecoration(
+                                  labelText: 'NIC',
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please enter your NIC';
+                                  }
+                                  final nicPattern =
+                                      RegExp(r'^[0-9]{9}[vVxX]|[0-9]{12}$');
+                                  if (!nicPattern.hasMatch(value)) {
+                                    return 'Please enter a valid NIC';
+                                  }
+                                  return null;
+                                },
+                              ),
+                              const SizedBox(height: 10),
+                              TextFormField(
+                                controller: _phoneController,
+                                decoration: InputDecoration(
+                                  labelText: 'Phone Number',
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please enter your phone number';
+                                  }
+                                  final phonePattern =
+                                      RegExp(r'^(?:0|94|\+94)?[1-9]\d{8}$');
+                                  if (!phonePattern.hasMatch(value)) {
+                                    return 'Please enter a valid phone number';
+                                  }
+                                  return null;
+                                },
+                              ),
+                              const SizedBox(height: 10),
+                              TextFormField(
+                                controller: _messageController,
+                                maxLines: 4,
+                                decoration: InputDecoration(
+                                  labelText: 'Message',
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              SizedBox(
+                                width: double.infinity,
+                                child: ElevatedButton(
+                                  style: Theme.of(context)
+                                      .elevatedButtonTheme
+                                      .style, // Apply theme style
+                                  onPressed: _submitForm,
+                                  child: const Text('Submit'),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 20),
-                    Form(
-                      key: _formKey,
-                      child: Column(
-                        children: [
-                          TextFormField(
-                            controller: _nicController,
-                            decoration: const InputDecoration(labelText: 'NIC'),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter your NIC';
-                              }
-                              // Add NIC validation logic here
-                              final nicPattern =
-                                  RegExp(r'^[0-9]{9}[vVxX]|[0-9]{12}$');
-                              if (!nicPattern.hasMatch(value)) {
-                                return 'Please enter a valid NIC';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 10),
-                          TextFormField(
-                            controller: _phoneController,
-                            decoration: const InputDecoration(
-                                labelText: 'Phone Number'),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter your phone number';
-                              }
-                              // Validate Sri Lankan phone number
-                              final phonePattern =
-                                  RegExp(r'^(?:0|94|\+94)?[1-9]\d{8}$');
-                              if (!phonePattern.hasMatch(value)) {
-                                return 'Please enter a valid phone number';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 10),
-                          TextFormField(
-                            controller: _messageController,
-                            decoration:
-                                const InputDecoration(labelText: 'Message'),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter a message';
-                              }
-                              if (value.length > 250) {
-                                return 'Message cannot exceed 250 characters';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 20),
-                          ElevatedButton(
-                            onPressed: _submitForm,
-                            child: const Text('Submit'),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
