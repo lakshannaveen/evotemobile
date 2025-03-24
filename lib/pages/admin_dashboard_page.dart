@@ -5,6 +5,7 @@ import 'package:evoteapp/pages/manage_candidates_page.dart';
 import 'package:evoteapp/pages/view_contact_submissions_page.dart';
 import 'package:evoteapp/services/admin_dashboard_service.dart';
 import 'package:intl/intl.dart';
+import 'package:evoteapp/pages/result_page.dart';
 
 class AdminDashboardPage extends StatefulWidget {
   const AdminDashboardPage({super.key});
@@ -126,7 +127,12 @@ class AdminDashboardPageState extends State<AdminDashboardPage> {
                 enabled: !_isElectionActive,
                 onTap: !_isElectionActive ? () {
                   Navigator.pop(context);
-                  // TODO: Navigate to results page
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ResultPage(),
+                    ),
+                  );
                 } : null,
               ),
               ListTile(
@@ -365,7 +371,12 @@ class AdminDashboardPageState extends State<AdminDashboardPage> {
                 'View Results',
                 Icons.bar_chart,
                 _isElectionActive ? null : () {
-                  // TODO: Navigate to results page
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ResultPage(),
+                    ),
+                  );
                 },
               ),
             ),
