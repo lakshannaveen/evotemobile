@@ -65,7 +65,7 @@ class VoteLoginPageState extends State<VoteLoginPage> {
         await Future.delayed(const Duration(seconds: 1)); // Simulate loading
 
         if (response != null) {
-          if (response == 'Incorrect User ID') {
+          if (response == 'Incorrect Voter ID') {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Your ID is incorrect')),
             );
@@ -144,7 +144,7 @@ class VoteLoginPageState extends State<VoteLoginPage> {
               const Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  'Enter your User ID',
+                  'Enter your Voter ID',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ),
@@ -152,14 +152,14 @@ class VoteLoginPageState extends State<VoteLoginPage> {
               TextFormField(
                 controller: _idController,
                 decoration: const InputDecoration(
-                  hintText: 'Enter your User ID',
+                  hintText: 'Enter your Voter ID',
                   border: OutlineInputBorder(),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'User ID cannot be empty';
+                    return 'Voter ID cannot be empty';
                   } else if (!isValidUserId(value)) {
-                    return 'Enter a valid User ID (e.g., 10-20-12345)';
+                    return 'Enter a valid Voter ID (e.g., 10-20-12345)';
                   }
                   return null;
                 },
@@ -169,7 +169,7 @@ class VoteLoginPageState extends State<VoteLoginPage> {
                 onPressed: () {
                   Navigator.pushNamed(context, '/contactus');
                 },
-                child: const Text('Forgot UserID? Contact Us'),
+                child: const Text('Forgot Voter ID? Contact Us'),
               ),
               const SizedBox(height: 20),
               _isLoading
