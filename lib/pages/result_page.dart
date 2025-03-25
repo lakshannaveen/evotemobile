@@ -29,6 +29,7 @@ class ResultPageState extends State<ResultPage> {
         appBar: AppBar(
           title: const Text('Election Results'),
           centerTitle: true,
+          backgroundColor: const Color(0xFF1976D2),
         ),
         body: _buildResultSummary(),
       ),
@@ -78,6 +79,7 @@ class ResultPageState extends State<ResultPage> {
                                 style: TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
+                                  color: Color(0xFF1976D2),
                                 ),
                               ),
                               const SizedBox(height: 16),
@@ -87,6 +89,7 @@ class ResultPageState extends State<ResultPage> {
                                     : 0,
                                 minHeight: 10,
                                 backgroundColor: Colors.grey[200],
+                                color: const Color(0xFF1976D2),
                               ),
                               const SizedBox(height: 8),
                               Row(
@@ -96,12 +99,16 @@ class ResultPageState extends State<ResultPage> {
                                   Text(
                                     'Total votes cast: ${formatNumber.format(totalVotes)}',
                                     style: const TextStyle(
-                                        fontWeight: FontWeight.bold),
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF1976D2),
+                                    ),
                                   ),
                                   Text(
                                     '${formatDecimal.format(votePercentage)}%',
                                     style: const TextStyle(
-                                        fontWeight: FontWeight.bold),
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF1976D2),
+                                    ),
                                   ),
                                 ],
                               ),
@@ -133,6 +140,7 @@ class ResultPageState extends State<ResultPage> {
                                       style: TextStyle(
                                         fontSize: 20,
                                         fontWeight: FontWeight.bold,
+                                        color: Color(0xFF1976D2),
                                       ),
                                     ),
                                     if (leaderInfo['hasWon'] == true) ...[
@@ -169,13 +177,13 @@ class ResultPageState extends State<ResultPage> {
                         ),
                       ],
 
-
                       // All Candidates Results
                       const Text(
                         'All Candidates',
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
+                          color: Color(0xFF1976D2),
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -226,6 +234,7 @@ class ResultPageState extends State<ResultPage> {
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
+                      color: Color(0xFF1976D2),
                     ),
                   ),
                   Row(
@@ -248,6 +257,7 @@ class ResultPageState extends State<ResultPage> {
                         '${formatDecimal.format(percentage)}%',
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
+                          color: Color(0xFF1976D2),
                         ),
                       ),
                     ],
@@ -272,6 +282,7 @@ class ResultPageState extends State<ResultPage> {
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
+                    color: Color(0xFF1976D2),
                   ),
                 ),
               ],
@@ -311,6 +322,7 @@ class ResultPageState extends State<ResultPage> {
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 18,
+                      color: Color(0xFF1976D2),
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -341,6 +353,7 @@ class ResultPageState extends State<ResultPage> {
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 20,
+                    color: Color(0xFF1976D2),
                   ),
                 ),
                 if (isLeader && percentage > 50) ...[
