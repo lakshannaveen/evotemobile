@@ -103,9 +103,9 @@ class _ContactUsPageState extends State<ContactUsPage> {
                             const SizedBox(width: 8),
                             GestureDetector(
                               onTap: () => _launchPhone(phoneNumber),
-                              child: Text(
+                              child: const Text(
                                 phoneNumber,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w500,
                                   color: Colors.blue,
@@ -122,9 +122,9 @@ class _ContactUsPageState extends State<ContactUsPage> {
                             const SizedBox(width: 8),
                             GestureDetector(
                               onTap: () => _launchEmail(email),
-                              child: Text(
+                              child: const Text(
                                 email,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w500,
                                   color: Colors.blue,

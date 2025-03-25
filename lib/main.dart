@@ -35,8 +35,8 @@ class MyApp extends StatelessWidget {
         '/admin': (context) => const AdminLoginPage(),
         '/contactus': (context) => const ContactUsPage(),
         '/guidlines': (context) => const GuidelinePage(),
-        '/verify': (context) => VerifyPage(),
-        '/cast': (context) => CastPage(),
+        '/verify': (context) => const VerifyPage(),
+        '/cast': (context) => const CastPage(),
       },
     );
   }

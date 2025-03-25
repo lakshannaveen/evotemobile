@@ -26,14 +26,16 @@ class ViewContactSubmissionsPage extends StatelessWidget {
             icon: const Icon(Icons.arrow_back),
             onPressed: () => Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => const AdminDashboardPage()),
+              MaterialPageRoute(
+                  builder: (context) => const AdminDashboardPage()),
             ),
           ),
           title: const Text('Contact Submissions'),
           centerTitle: true,
         ),
         body: StreamBuilder<QuerySnapshot>(
-          stream: FirebaseFirestore.instance.collection('contact_us').snapshots(),
+          stream:
+              FirebaseFirestore.instance.collection('contact_us').snapshots(),
           builder: (context, snapshot) {
             if (snapshot.hasError) {
               return Center(child: Text('Error: ${snapshot.error}'));
@@ -69,9 +71,9 @@ class ViewContactSubmissionsPage extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 8),
-                        Text(
+                        const Text(
                           'Message:',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontWeight: FontWeight.bold,
                           ),
                         ),

@@ -7,12 +7,8 @@ class VoterService {
 
   // Get all voters
   Stream<List<User>> getVoters() {
-    return _firestore.collection(_collection).snapshots().map(
-      (snapshot) => snapshot.docs.map((doc) => User.fromMap(
-        doc.data() as Map<String, dynamic>,
-        doc.id
-      )).toList()
-    );
+    return _firestore.collection(_collection).snapshots().map((snapshot) =>
+        snapshot.docs.map((doc) => User.fromMap(doc.data(), doc.id)).toList());
   }
 
   // Add a new voter
@@ -56,11 +52,12 @@ class VoterService {
   Future<List<User>> searchVoters(String query) async {
     try {
       if (query.isEmpty) {
-        QuerySnapshot querySnapshot = await _firestore.collection(_collection).get();
-        return querySnapshot.docs.map((doc) => User.fromMap(
-          doc.data() as Map<String, dynamic>,
-          doc.id
-        )).toList();
+        QuerySnapshot querySnapshot =
+            await _firestore.collection(_collection).get();
+        return querySnapshot.docs
+            .map((doc) =>
+                User.fromMap(doc.data() as Map<String, dynamic>, doc.id))
+            .toList();
       }
 
       // Convert query to lowercase for case-insensitive comparison
@@ -86,10 +83,7 @@ class VoterService {
       for (var doc in [...nicResults.docs, ...nameResults.docs]) {
         if (!seenIds.contains(doc.id)) {
           seenIds.add(doc.id);
-          voters.add(User.fromMap(
-            doc.data() as Map<String, dynamic>,
-            doc.id
-          ));
+          voters.add(User.fromMap(doc.data() as Map<String, dynamic>, doc.id));
         }
       }
 
