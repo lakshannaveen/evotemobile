@@ -7,8 +7,7 @@ class GuidelinePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Voting Guidelines'),
-        backgroundColor: Colors.blue,
+        title: const Text('Vote Guidelines'),
         centerTitle: true,
       ),
       body: Padding(
