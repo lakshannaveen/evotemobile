@@ -13,7 +13,6 @@ class GuidelinePage extends StatelessWidget {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
-          // Added scroll view
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -24,6 +23,8 @@ class GuidelinePage extends StatelessWidget {
                   'Use the scratch card to fill the login form'),
               _buildGuidelineItem(
                   Icons.lock, 'Log in using your unique voter credentials.'),
+              _buildGuidelineItem(Icons.verified_user,
+                  'Verify your NIC, Voter ID, District, Division, and Name.'),
               _buildGuidelineItem(
                   Icons.person, 'Select your preferred candidate.'),
               _buildGuidelineItem(
@@ -38,6 +39,8 @@ class GuidelinePage extends StatelessWidget {
               _buildGuidelineItem(Icons.warning, 'You can only vote once.'),
               _buildGuidelineItem(
                   Icons.wifi, 'Ensure you have a stable internet connection.'),
+              const SizedBox(height: 20),
+              _buildContactUs(context),
             ],
           ),
         ),
@@ -80,6 +83,32 @@ class GuidelinePage extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildContactUs(BuildContext context) {
+    return Center(
+      child: Wrap(
+        children: [
+          const Text(
+            'If you have any issues, please ',
+            style: TextStyle(fontSize: 16),
+          ),
+          GestureDetector(
+            onTap: () {
+              Navigator.pushNamed(context, '/contactus');
+            },
+            child: const Text(
+              'Contact Us',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF0D47A1),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
