@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:evoteapp/config/theme.dart';
 
-class ElectionNotActivePage extends StatelessWidget {
+class ElectionNotActivePage extends StatefulWidget {
   final String status;
   
   const ElectionNotActivePage({
@@ -10,10 +9,30 @@ class ElectionNotActivePage extends StatelessWidget {
   });
 
   @override
+  ElectionNotActivePageState createState() => ElectionNotActivePageState();
+}
+
+class ElectionNotActivePageState extends State<ElectionNotActivePage> {
+  int _tapCount = 0;
+
+  void _checkTaps() {
+    setState(() {
+      _tapCount++;
+      if (_tapCount >= 5) {
+        _tapCount = 0;
+        Navigator.pushNamed(context, '/admin');
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Sri Lanka eVote System'),
+        title: const Text(
+          'Sri Lanka eVote System',
+          style: TextStyle(fontSize: 18),
+        ),
         centerTitle: true,
       ),
       body: Center(
@@ -21,31 +40,35 @@ class ElectionNotActivePage extends StatelessWidget {
           padding: const EdgeInsets.all(24.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
               // Election status icon
               Icon(
-                status == 'Ended' ? Icons.how_to_vote_outlined : Icons.access_time_rounded,
+                widget.status == 'Ended' ? Icons.how_to_vote_outlined : Icons.access_time_rounded,
                 size: 80,
-                color: status == 'Ended' ? Colors.green : Colors.orange,
+                color: widget.status == 'Ended' ? Colors.green : Colors.orange,
               ),
               const SizedBox(height: 30),
               
-              // Status text
-              Text(
-                status == 'Ended' 
-                    ? 'Election Has Ended'
-                    : 'Election Has Not Started Yet',
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
+              // Status text with tap detector
+              GestureDetector(
+                onTap: widget.status == 'Ended' ? _checkTaps : null,
+                child: Text(
+                  widget.status == 'Ended' 
+                      ? 'Election Has Ended'
+                      : 'Election Has Not Started Yet',
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-                textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
               
               // Description text
               Text(
-                status == 'Ended'
+                widget.status == 'Ended'
                     ? 'Thank you for your participation. The election voting period has concluded.'
                     : 'Please check back later when the election is open for voting.',
                 style: const TextStyle(
@@ -54,10 +77,10 @@ class ElectionNotActivePage extends StatelessWidget {
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 30),
               
               // Access results if election has ended
-              if (status == 'Ended')
+              if (widget.status == 'Ended')
                 SizedBox(
                   width: 200,
                   child: ElevatedButton(
@@ -68,45 +91,30 @@ class ElectionNotActivePage extends StatelessWidget {
                   ),
                 ),
               
-              // Always show contact us
-              const SizedBox(height: 20),
+              if (widget.status == 'Ended') 
+                const SizedBox(height: 30),
+              
+              // Contact us button
               SizedBox(
                 width: 200,
                 child: ElevatedButton(
                   onPressed: () {
                     Navigator.pushNamed(context, '/contactus');
                   },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.grey[200],
-                    foregroundColor: Colors.black87,
-                  ),
                   child: const Text('Contact Us'),
                 ),
               ),
               
-              // Always show guidelines
-              const SizedBox(height: 16),
+              // Guidelines button
+              const SizedBox(height: 30),
               SizedBox(
                 width: 200,
                 child: ElevatedButton(
                   onPressed: () {
                     Navigator.pushNamed(context, '/guidlines');
                   },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.grey[200],
-                    foregroundColor: Colors.black87,
-                  ),
                   child: const Text('Guidelines'),
                 ),
-              ),
-              
-              // Admin access
-              const SizedBox(height: 40),
-              TextButton(
-                onPressed: () {
-                  Navigator.pushNamed(context, '/admin');
-                },
-                child: const Text('Admin Login'),
               ),
             ],
           ),
