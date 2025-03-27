@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:evoteapp/services/admin_dashboard_service.dart';
 import 'package:evoteapp/pages/election_not_active_page.dart';
+import 'package:evoteapp/services/theme_provider.dart';
+import 'package:provider/provider.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -11,41 +13,35 @@ class HomePage extends StatelessWidget {
       appBar: AppBar(
         title: const Text(
           'Welcome to Sri Lanka Evote System',
-          style: TextStyle(fontSize: 18), // Adjust font size if needed
+          style: TextStyle(fontSize: 18),
         ),
-        centerTitle: true, // Center the title
+        centerTitle: true,
       ),
+      drawer: _buildDrawer(context),
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             SizedBox(
-              width: 200, // Adjust button width
+              width: 200,
               child: ElevatedButton(
-                onPressed: () {
-                  // Check election status before going to vote page
-                  _checkElectionStatusForVoting(context);
-                },
+                onPressed: () => _checkElectionStatusForVoting(context),
                 child: const Text('Vote'),
               ),
             ),
             const SizedBox(height: 30),
             SizedBox(
-              width: 200, // Adjust button width
+              width: 200,
               child: ElevatedButton(
-                onPressed: () {
-                  Navigator.pushNamed(context, '/results');
-                },
+                onPressed: () => Navigator.pushNamed(context, '/results'),
                 child: const Text('Results'),
               ),
             ),
             const SizedBox(height: 30),
             SizedBox(
-              width: 200, // Adjust button width
+              width: 200,
               child: ElevatedButton(
-                onPressed: () {
-                  Navigator.pushNamed(context, '/contactus');
-                },
+                onPressed: () => Navigator.pushNamed(context, '/contactus'),
                 child: const Text('Contact Us'),
               ),
             ),
@@ -53,9 +49,7 @@ class HomePage extends StatelessWidget {
             SizedBox(
               width: 200,
               child: ElevatedButton(
-                onPressed: () {
-                  Navigator.pushNamed(context, '/guidlines');
-                },
+                onPressed: () => Navigator.pushNamed(context, '/guidelines'),
                 child: const Text('Guideline'),
               ),
             ),
@@ -64,38 +58,109 @@ class HomePage extends StatelessWidget {
       ),
     );
   }
-  
-  // Method to check election status before allowing voting
+
+  Widget _buildDrawer(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+
+    return Drawer(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          DrawerHeader(
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            child: const Text(
+              'Menu',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 24,
+              ),
+            ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.home),
+            title: const Text('Home'),
+            onTap: () {
+              Navigator.pop(context);
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.people),
+            title: const Text('Vote'),
+            onTap: () {
+              Navigator.pop(context);
+              _checkElectionStatusForVoting(context);
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.bar_chart),
+            title: const Text('Results'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, '/results');
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.help),
+            title: const Text('Guidelines'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, '/guidelines');
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.contact_mail),
+            title: const Text('Contact Us'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, '/contactus');
+            },
+          ),
+          const Divider(),
+          Consumer<ThemeProvider>(
+            builder: (context, themeProvider, child) {
+              return SwitchListTile(
+                title: const Text('Dark Mode'),
+                secondary: Icon(
+                  themeProvider.isDarkMode
+                      ? Icons.dark_mode
+                      : Icons.light_mode,
+                ),
+                value: themeProvider.isDarkMode,
+                onChanged: (value) {
+                  themeProvider.toggleTheme(value);
+                },
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
   void _checkElectionStatusForVoting(BuildContext context) {
     final AdminDashboardService dashboardService = AdminDashboardService();
-    
-    // Show loading dialog while checking
+
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) => const Center(child: CircularProgressIndicator()),
     );
-    
-    // Get the election status once
+
     dashboardService.getElectionStatus().first.then((electionData) {
-      // Close loading dialog
       Navigator.pop(context);
-      
       final isActive = electionData['isActive'] as bool;
       final status = electionData['status'] as String;
-      
-      if (isActive) {
-        // If election is active, proceed to vote login page
-        Navigator.pushNamed(context, '/votelogin');
-      } else {
-        // If not active, show the election not active page
-        Navigator.push(
-          context, 
-          MaterialPageRoute(
-            builder: (context) => ElectionNotActivePage(status: status),
-          ),
-        );
-      }
+
+      isActive
+          ? Navigator.pushNamed(context, '/votelogin')
+          : Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ElectionNotActivePage(status: status),
+        ),
+      );
     });
   }
 }

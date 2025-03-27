@@ -1,0 +1,2 @@
+D:/MAD/evotemobile/android/app/.cxx/Debug/1v703a2h/x86/CMakeFiles/edit_cache.dir
+D:/MAD/evotemobile/android/app/.cxx/Debug/1v703a2h/x86/CMakeFiles/rebuild_cache.dir

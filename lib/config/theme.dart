@@ -3,43 +3,70 @@ import 'package:flutter/material.dart';
 class AppTheme {
   static ThemeData get lightTheme {
     return ThemeData(
-      colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF1976D2)),
+      brightness: Brightness.light,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: const Color(0xFF1976D2),
+        brightness: Brightness.light,
+      ),
       useMaterial3: true,
       appBarTheme: const AppBarTheme(
-        backgroundColor: Color(0xFF1976D2), // Blue app bar
-        foregroundColor: Colors.white, // White text
+        backgroundColor: Color(0xFF1976D2),
+        foregroundColor: Colors.white,
       ),
       buttonTheme: const ButtonThemeData(
-        buttonColor: Color(0xFF0D47A1), // Dark Blue button
+        buttonColor: Color(0xFF0D47A1),
         textTheme: ButtonTextTheme.primary,
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF0D47A1), // Dark Blue button
-          foregroundColor: Colors.white, // White text color
-          minimumSize: const Size(200, 50), // Uniform button size
+          backgroundColor: const Color(0xFF0D47A1),
+          foregroundColor: Colors.white,
+          minimumSize: const Size(200, 50),
         ),
       ),
+    );
+  }
+
+  static ThemeData get darkTheme {
+    return ThemeData(
+      brightness: Brightness.dark,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: const Color(0xFF1976D2),
+        brightness: Brightness.dark,
+      ),
+      useMaterial3: true,
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Color(0xFF0D3258),
+        foregroundColor: Colors.white,
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFF1E88E5),
+          foregroundColor: Colors.white,
+          minimumSize: const Size(200, 50),
+        ),
+      ),
+      scaffoldBackgroundColor: const Color(0xFF121212),
     );
   }
 
   // Admin Theme
   static ThemeData get adminTheme {
     return ThemeData(
-      colorScheme: ColorScheme.fromSeed(seedColor: Colors.red),
-      useMaterial3: true,
-      scaffoldBackgroundColor: Colors.white, // White background for admin
-      appBarTheme: const AppBarTheme(
-        backgroundColor: Colors.red, // Red app bar
-        foregroundColor: Colors.white,
+      brightness: Brightness.light,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: Colors.red,
+        brightness: Brightness.light,
       ),
-      buttonTheme: const ButtonThemeData(
-        buttonColor: Colors.redAccent, // Red button
-        textTheme: ButtonTextTheme.primary,
+      useMaterial3: true,
+      scaffoldBackgroundColor: Colors.white,
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Colors.red,
+        foregroundColor: Colors.white,
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.redAccent, // Red button
+          backgroundColor: Colors.redAccent,
           foregroundColor: Colors.white,
           minimumSize: const Size(200, 50),
         ),
@@ -47,16 +74,32 @@ class AppTheme {
       inputDecorationTheme: const InputDecorationTheme(
         border: OutlineInputBorder(),
         focusedBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.red), // Red border on focus
+          borderSide: BorderSide(color: Colors.red),
         ),
-        enabledBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.black), // Black border
-        ),
-        hintStyle: TextStyle(color: Colors.black), // Black placeholder text
       ),
-      textTheme: const TextTheme(
-        bodyLarge: TextStyle(color: Colors.black),
-        bodyMedium: TextStyle(color: Colors.black),
+    );
+  }
+
+  // Admin Dark Theme
+  static ThemeData get adminDarkTheme {
+    return ThemeData(
+      brightness: Brightness.dark,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: Colors.red,
+        brightness: Brightness.dark,
+      ),
+      useMaterial3: true,
+      scaffoldBackgroundColor: const Color(0xFF121212),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Color(0xFFB71C1C),
+        foregroundColor: Colors.white,
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFFD32F2F),
+          foregroundColor: Colors.white,
+          minimumSize: const Size(200, 50),
+        ),
       ),
     );
   }
