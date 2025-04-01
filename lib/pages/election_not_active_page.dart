@@ -2,11 +2,8 @@ import 'package:flutter/material.dart';
 
 class ElectionNotActivePage extends StatefulWidget {
   final String status;
-  
-  const ElectionNotActivePage({
-    super.key, 
-    this.status = 'Not Started'
-  });
+
+  const ElectionNotActivePage({super.key, this.status = 'Not Started'});
 
   @override
   ElectionNotActivePageState createState() => ElectionNotActivePageState();
@@ -44,17 +41,19 @@ class ElectionNotActivePageState extends State<ElectionNotActivePage> {
             children: [
               // Election status icon
               Icon(
-                widget.status == 'Ended' ? Icons.how_to_vote_outlined : Icons.access_time_rounded,
+                widget.status == 'Ended'
+                    ? Icons.how_to_vote_outlined
+                    : Icons.access_time_rounded,
                 size: 80,
                 color: widget.status == 'Ended' ? Colors.green : Colors.orange,
               ),
               const SizedBox(height: 30),
-              
+
               // Status text with tap detector
               GestureDetector(
                 onTap: widget.status == 'Ended' ? _checkTaps : null,
                 child: Text(
-                  widget.status == 'Ended' 
+                  widget.status == 'Ended'
                       ? 'Election Has Ended'
                       : 'Election Has Not Started Yet',
                   style: const TextStyle(
@@ -65,7 +64,7 @@ class ElectionNotActivePageState extends State<ElectionNotActivePage> {
                 ),
               ),
               const SizedBox(height: 20),
-              
+
               // Description text
               Text(
                 widget.status == 'Ended'
@@ -78,7 +77,7 @@ class ElectionNotActivePageState extends State<ElectionNotActivePage> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 30),
-              
+
               // Access results if election has ended
               if (widget.status == 'Ended')
                 SizedBox(
@@ -90,10 +89,9 @@ class ElectionNotActivePageState extends State<ElectionNotActivePage> {
                     child: const Text('View Results'),
                   ),
                 ),
-              
-              if (widget.status == 'Ended') 
-                const SizedBox(height: 30),
-              
+
+              if (widget.status == 'Ended') const SizedBox(height: 30),
+
               // Contact us button
               SizedBox(
                 width: 200,
@@ -104,14 +102,14 @@ class ElectionNotActivePageState extends State<ElectionNotActivePage> {
                   child: const Text('Contact Us'),
                 ),
               ),
-              
+
               // Guidelines button
               const SizedBox(height: 30),
               SizedBox(
                 width: 200,
                 child: ElevatedButton(
                   onPressed: () {
-                    Navigator.pushNamed(context, '/guidlines');
+                    Navigator.pushNamed(context, '/guidelines');
                   },
                   child: const Text('Guidelines'),
                 ),
